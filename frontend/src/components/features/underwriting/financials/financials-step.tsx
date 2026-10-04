@@ -20,6 +20,7 @@ export function FinancialsStep() {
       <LineItemsSection
         name="optimizationItems"
         section="optimization"
+        optional
         title="Optimization list"
         description="One-time setup spend before the first guest arrives. Adds to Total Out of Pocket and the depreciable value."
         nameLabel="Category"

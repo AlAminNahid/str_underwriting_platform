@@ -44,7 +44,7 @@ export function TextField({
         placeholder={placeholder}
         autoComplete="off"
         aria-invalid={showError || undefined}
-        className="h-9 bg-card shadow-xs"
+        className="h-9 bg-card shadow-xs placeholder:text-muted-foreground/50"
         data-testid={`field-${name}`}
       />
       {showError && <FieldError>{issue?.message}</FieldError>}

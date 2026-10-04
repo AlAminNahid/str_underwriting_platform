@@ -87,6 +87,11 @@ export const TRAINING_TAX_DEFAULTS: UnderwritingFormValues["taxes"] = {
   taxRatePct: "37",
 };
 
+export const NEW_DRAFT_ASSUMPTIONS = {
+  coHostingFeePct: "0",
+  appreciationPct: "0",
+} as const;
+
 export const OPEX_MULTIPLIERS: Record<ScenarioKey, number> = {
   low: 0.96,
   mid: 1,

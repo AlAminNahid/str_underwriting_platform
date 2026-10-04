@@ -25,6 +25,7 @@ export function LineItemsSection({
   namePlaceholder,
   amountLabel,
   monthly,
+  optional = false,
   addLabel,
   suggestions,
   emptyText,
@@ -38,6 +39,7 @@ export function LineItemsSection({
   namePlaceholder: string;
   amountLabel: string;
   monthly?: boolean;
+  optional?: boolean;
   addLabel: string;
   suggestions: string[];
   emptyText: string;
@@ -59,7 +61,12 @@ export function LineItemsSection({
       id={`section-${section}`}
       title={title}
       description={description}
-      status={<SectionStatus sections={[section]} />}
+      status={
+        <SectionStatus
+          sections={[section]}
+          optionalAndEmpty={optional && fields.length === 0}
+        />
+      }
       footer={
         <>
           <Button
@@ -147,7 +154,6 @@ export function LineItemsSection({
                       name={`${name}.${index}.amount`}
                       kind={monthly ? "monthly" : "money"}
                       label={`${amountLabel}, line ${index + 1}`}
-                      placeholder="0"
                       hideLabel
                     />
                   </td>

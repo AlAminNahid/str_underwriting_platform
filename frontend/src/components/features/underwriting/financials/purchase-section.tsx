@@ -26,28 +26,25 @@ export function PurchaseSection() {
           name="purchase.downPaymentPct"
           kind="percent"
           label="Down payment"
-          placeholder="20"
-          help="Typically 20–25%"
+          help="Usually 20–25%"
         />
         <NumericField
           name="purchase.interestRatePct"
           kind="percent"
           label="Interest rate"
-          placeholder="6.99"
-          help="Annual rate"
+          help="Annual rate, e.g. 6.99%"
         />
         <NumericField
           name="purchase.termYears"
           kind="years"
           label="Loan term"
-          placeholder="30"
+          help="Usually 15 or 30 years"
         />
         <NumericField
           name="purchase.closingCostsPct"
           kind="percent"
           label="Closing costs"
-          placeholder="3"
-          help="% of purchase price"
+          help="Usually 2–5% of the price"
         />
       </div>
       <CalculatedValues

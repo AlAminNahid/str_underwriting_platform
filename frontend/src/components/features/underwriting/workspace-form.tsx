@@ -39,7 +39,7 @@ export function WorkspaceForm({ draft }: { draft: UnderwritingDraft }) {
   const [initialValues] = useState(() =>
     pickInitialValues(draft.id, draft.values, draft.updatedAt),
   );
-  const [serverPayload] = useState(() => toSavePayload(draft.values));
+  const [serverPayload] = useState(() => toSavePayload(draft.savedValues));
 
   const form = useForm<UnderwritingFormValues>({
     defaultValues: initialValues,

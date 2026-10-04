@@ -51,6 +51,7 @@ function Metric({
         className={cn(
           "text-[1.4rem] leading-tight font-semibold tracking-tight tabular-nums",
           negative && "text-danger",
+          value === "—" && "text-muted-foreground/50",
         )}
       >
         {value}
@@ -70,6 +71,20 @@ export function DealSummary() {
     (key) => c.scenarios[key]?.cashOnCash ?? null,
   );
   const scale = Math.max(10, ...cocValues.map((v) => Math.abs(v ?? 0)));
+  const hasCoc = cocValues.some((v) => v !== null);
+
+  const oopDetail =
+    c.totalOutOfPocket === null
+      ? "Needs down payment and closing costs"
+      : `${formatCurrency(c.downPayment)} down · ${formatCurrency(c.closingCosts)} closing · ${formatCurrency(c.optimizationTotal)} setup`;
+  const fcfDetail =
+    mid?.freeCashFlow != null
+      ? `NOI ${formatCurrency(mid.netOperatingIncome)} − debt service ${formatCurrency(c.annualDebtService)}`
+      : c.annualDebtService === null && !mid
+        ? "Needs financing and Mid revenue"
+        : c.annualDebtService === null
+          ? "Needs down payment, interest rate and loan term"
+          : "Needs Mid revenue";
 
   return (
     <Card className="gap-0 py-0" data-testid="deal-summary">
@@ -102,14 +117,14 @@ export function DealSummary() {
         step="01"
         label="Total out of pocket"
         value={formatCurrency(c.totalOutOfPocket)}
-        detail={`${formatCurrency(c.downPayment)} down · ${formatCurrency(c.closingCosts)} closing · ${formatCurrency(c.optimizationTotal)} setup`}
+        detail={oopDetail}
       />
       <Metric
         step="02"
         label="Annual free cash flow · Mid"
         value={formatCurrency(mid?.freeCashFlow)}
         negative={(mid?.freeCashFlow ?? 0) < 0}
-        detail={`NOI ${formatCurrency(mid?.netOperatingIncome)} − debt service ${formatCurrency(c.annualDebtService)}`}
+        detail={fcfDetail}
       />
       <div className="space-y-2 border-t bg-gold/10 px-5 py-3.5">
         <p className="flex justify-between text-xs text-muted-foreground">
@@ -118,39 +133,44 @@ export function DealSummary() {
             03
           </span>
         </p>
-        {(["Low", "Mid", "High"] as const).map((label, i) => {
-          const v = cocValues[i];
-          const width =
-            v === null ? 0 : Math.min(50, (Math.abs(v) / scale) * 50);
-          return (
-            <div
-              key={label}
-              className="grid grid-cols-[34px_1fr_54px] items-center gap-2 text-xs"
-            >
-              <span className="text-muted-foreground">{label}</span>
-              <span className="relative h-1.5 overflow-hidden rounded-full bg-muted">
-                <span className="absolute inset-y-0 left-1/2 w-px bg-foreground/20" />
-                {v !== null && (
-                  <span
-                    className={cn(
-                      "absolute inset-y-0 rounded-full",
-                      v >= 0 ? "left-1/2 bg-primary" : "right-1/2 bg-danger",
-                    )}
-                    style={{ width: `${width}%` }}
-                  />
-                )}
-              </span>
-              <span
-                className={cn(
-                  "text-right font-semibold tabular-nums",
-                  v !== null && v < 0 && "text-danger",
-                )}
+        {!hasCoc ? (
+          <p className="text-xs text-muted-foreground">
+            Needs financing and revenue forecasts
+          </p>
+        ) : (
+          (["Low", "Mid", "High"] as const).map((label, i) => {
+            const v = cocValues[i];
+            const width =
+              v === null ? 0 : Math.min(100, (Math.abs(v) / scale) * 100);
+            return (
+              <div
+                key={label}
+                className="grid grid-cols-[34px_1fr_54px] items-center gap-2 text-xs"
               >
-                {pct(v)}
-              </span>
-            </div>
-          );
-        })}
+                <span className="text-muted-foreground">{label}</span>
+                <span className="h-1.5 overflow-hidden rounded-full bg-muted">
+                  {v !== null && (
+                    <span
+                      className={cn(
+                        "block h-full rounded-full",
+                        v >= 0 ? "bg-primary" : "bg-danger",
+                      )}
+                      style={{ width: `${width}%` }}
+                    />
+                  )}
+                </span>
+                <span
+                  className={cn(
+                    "text-right font-semibold tabular-nums",
+                    v !== null && v < 0 && "text-danger",
+                  )}
+                >
+                  {pct(v)}
+                </span>
+              </div>
+            );
+          })
+        )}
       </div>
 
       <dl className="divide-y border-t px-5 py-1 text-[13px]">

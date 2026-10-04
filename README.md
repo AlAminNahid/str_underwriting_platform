@@ -80,6 +80,10 @@ The underwriting chain from the brief — **Total Out of Pocket → Annual Free 
 
 **Scoring stats use one rule** — the latest attempt per property — for Completed cases, Average score and the score pill on each card.
 
+**Inputs only show real values.** No number is ever used as placeholder text, so what a trainee sees in a field is exactly what is saved and calculated. On a new draft the taxes start at the brief's training defaults (20 / 25 / 60 / 37) and the co-hosting fee and appreciation at 0%, all as real values; everything else starts empty, with guidance (e.g. "Usually 20–25%") in the help text below the field.
+
+**Submit requires a complete underwriting.** The Submit button stays disabled until the Review checklist is empty. As a result the brief's "no forecast at all → Low (40)" case can't happen through the UI, and it can't happen through the API either: submitting without a revenue forecast returns `422 Missing required sections: forecasted_revenue`. The Low band is covered instead by a Mid forecast more than 25% from the reference.
+
 **Guards.** `GET /api/underwritings/{id}` also serves the analyst's reference underwritings; the workspace refuses to show them so the answer can't leak. Submitted drafts open read-only. An open draft is always resumed, so starting never creates a duplicate.
 
 ---

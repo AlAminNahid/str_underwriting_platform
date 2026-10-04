@@ -1,4 +1,8 @@
-import { DEAL_TAGS } from "@/constants/underwriting";
+import {
+  DEAL_TAGS,
+  NEW_DRAFT_ASSUMPTIONS,
+  TRAINING_TAX_DEFAULTS,
+} from "@/constants/underwriting";
 import { streetFromAddress } from "@/lib/address";
 import { toNumber } from "@/lib/number";
 import {
@@ -54,7 +58,7 @@ export function mapUnderwriting(dto: UnderwritingDto): UnderwritingDraft {
   const tags = emptyTags();
   for (const { key } of DEAL_TAGS) tags[key] = dto[key] === true;
 
-  const values: UnderwritingFormValues = {
+  const savedValues: UnderwritingFormValues = {
     purchase: {
       price: decimalToInput(purchase.purchase_price ?? dto.purchase_price),
       downPaymentPct: fractionToPercentInput(purchase.down_payment_pct),
@@ -104,6 +108,8 @@ export function mapUnderwriting(dto: UnderwritingDto): UnderwritingDraft {
     isSubmitted:
       dto.deal_status === "analyst_completed" || dto.deal_submitted !== null,
     updatedAt: dto.updated_at,
+    savedValues,
+    values: withNewDraftDefaults(savedValues),
     official: {
       totalOutOfPocket: toNumber(dto.total_oop),
       midRevenue: toNumber(dto.mid_gross_revenue),
@@ -114,7 +120,24 @@ export function mapUnderwriting(dto: UnderwritingDto): UnderwritingDraft {
         high: fractionToPercent(dto.h_cash_on_cash),
       },
     },
-    values,
+  };
+}
+
+const isBlank = (values: Record<string, string>) =>
+  Object.values(values).every((v) => !v.trim());
+
+export function withNewDraftDefaults(
+  values: UnderwritingFormValues,
+): UnderwritingFormValues {
+  return {
+    ...values,
+    taxes: isBlank(values.taxes) ? { ...TRAINING_TAX_DEFAULTS } : values.taxes,
+    coHostingFeePct: values.coHostingFeePct.trim()
+      ? values.coHostingFeePct
+      : NEW_DRAFT_ASSUMPTIONS.coHostingFeePct,
+    appreciationPct: values.appreciationPct.trim()
+      ? values.appreciationPct
+      : NEW_DRAFT_ASSUMPTIONS.appreciationPct,
   };
 }
 

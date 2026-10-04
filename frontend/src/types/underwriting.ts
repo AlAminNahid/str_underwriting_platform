@@ -95,6 +95,7 @@ export interface UnderwritingDraft {
   isSubmitted: boolean;
   updatedAt: string | null;
   values: UnderwritingFormValues;
+  savedValues: UnderwritingFormValues;
   official: {
     totalOutOfPocket: number | null;
     midRevenue: number | null;

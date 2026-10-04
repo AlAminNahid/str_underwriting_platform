@@ -28,14 +28,12 @@ export function AnalysisStep() {
             name="revenue.low"
             kind="money"
             label="Low"
-            placeholder="0"
             help="Cautious year"
           />
           <NumericField
             name="revenue.mid"
             kind="money"
             label="Mid"
-            placeholder="0"
             help="Expected year · compared with the analyst"
             graded
           />
@@ -43,7 +41,6 @@ export function AnalysisStep() {
             name="revenue.high"
             kind="money"
             label="High"
-            placeholder="0"
             help="Strong year"
           />
         </div>
@@ -52,7 +49,7 @@ export function AnalysisStep() {
       <SectionCard
         id="section-assumptions"
         title="Assumptions"
-        description="Optional. Both count as 0% when left empty."
+        description="Optional. Both start at 0%; change them if they apply to this deal."
         status={<SectionStatus sections={["assumptions"]} />}
       >
         <div className="grid gap-4 sm:grid-cols-2">
@@ -60,14 +57,12 @@ export function AnalysisStep() {
             name="coHostingFeePct"
             kind="percent"
             label="Co-hosting fee"
-            placeholder="0"
-            help="Share of revenue paid to a co-host"
+            help="Leave at 0 if self-managed"
           />
           <NumericField
             name="appreciationPct"
             kind="percent"
             label="Annual appreciation"
-            placeholder="3"
             help="Yearly growth in property value"
           />
         </div>

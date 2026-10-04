@@ -17,10 +17,24 @@ import type { SectionId } from "@/types/underwriting";
 
 import { useWorkspace } from "./workspace-context";
 
-export function SectionStatus({ sections }: { sections: SectionId[] }) {
+export function SectionStatus({
+  sections,
+  optionalAndEmpty = false,
+}: {
+  sections: SectionId[];
+  optionalAndEmpty?: boolean;
+}) {
   const all = useWorkspace().issues.filter((issue) =>
     sections.includes(issue.section),
   );
+
+  if (all.length === 0 && optionalAndEmpty) {
+    return (
+      <span className="inline-flex h-6 items-center rounded-md bg-muted px-2 text-xs font-medium text-muted-foreground">
+        Optional
+      </span>
+    );
+  }
 
   if (all.length === 0) {
     return (

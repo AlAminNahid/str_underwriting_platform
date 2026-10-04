@@ -108,7 +108,7 @@ export function NumericField({
             onBlur();
           }}
           aria-invalid={showError || undefined}
-          className="tabular-nums"
+          className="tabular-nums placeholder:text-muted-foreground/50"
           data-testid={`field-${name}`}
         />
         {suffix && (
