@@ -24,7 +24,7 @@ function Brand() {
   return (
     <Link
       href={ROUTES.dashboard}
-      className="mb-4 block rounded-xl focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:outline-none"
+      className="mb-4 flex flex-col items-center rounded-xl focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
       aria-label={`${siteConfig.company} ${siteConfig.name}, go to dashboard`}
     >
       <span className="inline-block rounded-lg bg-white px-2.5 py-1.5 shadow-sm">
@@ -37,7 +37,7 @@ function Brand() {
           className="h-auto w-[132px]"
         />
       </span>
-      <span className="mt-2.5 flex items-center gap-2 px-1">
+      <span className="mt-2.5 flex items-center justify-center gap-2">
         <span className="h-4 w-0.5 rounded-full bg-gold" aria-hidden />
         <span className="font-brand text-[15px] font-extrabold tracking-tight">
           {siteConfig.name}
@@ -73,9 +73,9 @@ export function AppSidebar({ className }: { className?: string }) {
               aria-current={active ? "page" : undefined}
               className={cn(
                 "flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm font-medium transition-colors",
-                "focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:outline-none",
+                "focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none",
                 active
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  ? "bg-sidebar-primary font-semibold text-sidebar-primary-foreground shadow-sm"
                   : "text-sidebar-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground",
               )}
             >

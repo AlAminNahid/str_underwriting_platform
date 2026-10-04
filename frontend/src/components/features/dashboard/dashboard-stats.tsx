@@ -1,8 +1,8 @@
 import {
   CircleCheckIcon,
+  CircleDashedIcon,
   LayersIcon,
   TargetIcon,
-  TrophyIcon,
 } from "lucide-react";
 
 import { Progress } from "@/components/ui/progress";
@@ -11,8 +11,7 @@ import type { DashboardStats as Stats } from "@/lib/dashboard";
 import { StatCard } from "./stat-card";
 
 export function DashboardStats({ stats }: { stats: Stats }) {
-  const { total, completed, averageScore, perfect, inProgress, notStarted } =
-    stats;
+  const { total, completed, averageScore, inProgress, notStarted } = stats;
 
   return (
     <section
@@ -41,19 +40,18 @@ export function DashboardStats({ stats }: { stats: Stats }) {
         footer="Latest attempt per property"
       />
       <StatCard
-        testId="stat-perfect"
-        label="Perfect scores"
-        icon={TrophyIcon}
-        value={completed ? perfect : "—"}
-        suffix={completed ? `/ ${completed}` : undefined}
-        footer="Completed cases scored 100"
-      />
-      <StatCard
         testId="stat-in-progress"
         label="In progress"
         icon={LayersIcon}
         value={inProgress}
-        footer={`${notStarted} not started`}
+        footer="Drafts you can resume"
+      />
+      <StatCard
+        testId="stat-not-started"
+        label="Not started"
+        icon={CircleDashedIcon}
+        value={notStarted}
+        footer="Cases available to start"
       />
     </section>
   );

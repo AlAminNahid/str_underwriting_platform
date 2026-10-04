@@ -5,18 +5,16 @@ export interface DashboardStats {
   total: number;
   completed: number;
   averageScore: number | null;
-  perfect: number;
   inProgress: number;
   notStarted: number;
 }
 
 export function computeStats({ summary, cases }: Dashboard): DashboardStats {
-  const graded = cases.filter((c) => c.latestScore !== null);
   return {
     total: cases.length,
-    completed: graded.length,
+    // Properties with a graded attempt (latest score), same basis as the average.
+    completed: cases.filter((c) => c.latestScore !== null).length,
     averageScore: summary.averageScore,
-    perfect: graded.filter((c) => c.latestScore?.rating === "best").length,
     inProgress: summary.inProgress,
     notStarted: summary.notStarted,
   };
