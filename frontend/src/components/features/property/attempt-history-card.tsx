@@ -18,6 +18,7 @@ import {
   formatPercent,
   pluralize,
 } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import type { Attempt } from "@/types/training";
 
 export function AttemptHistoryCard({
@@ -25,16 +26,20 @@ export function AttemptHistoryCard({
   loading,
   failed,
   onRetry,
+  title = "Attempt history",
+  currentId,
 }: {
   attempts: Attempt[] | undefined;
   loading: boolean;
   failed: boolean;
   onRetry: () => void;
+  title?: string;
+  currentId?: number;
 }) {
   return (
     <Card className="gap-0 pb-0" data-testid="attempt-history">
       <CardHeader className="border-b">
-        <CardTitle>Attempt history</CardTitle>
+        <CardTitle>{title}</CardTitle>
         <CardDescription>
           {attempts?.length
             ? `${pluralize(attempts.length, "graded attempt")}, newest first`
@@ -66,7 +71,7 @@ export function AttemptHistoryCard({
       ) : (
         <ol className="divide-y">
           {attempts.map((a, index) => (
-            <li key={a.id}>
+            <li key={a.id} className={cn(a.id === currentId && "bg-gold/10")}>
               <Link
                 href={ROUTES.submission(a.id)}
                 className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/60"

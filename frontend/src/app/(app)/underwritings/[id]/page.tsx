@@ -1,14 +1,18 @@
-import { ComingNext } from "@/components/features/shared/coming-next";
-import { ROUTES } from "@/constants/routes";
+import type { Metadata } from "next";
+import { Suspense } from "react";
 
-export default function UnderwritingPage() {
+import { WorkspaceSkeleton } from "@/components/features/underwriting/workspace-skeleton";
+import { WorkspaceView } from "@/components/features/underwriting/workspace-view";
+
+export const metadata: Metadata = { title: "Underwriting" };
+
+export default async function UnderwritingPage({
+  params,
+}: PageProps<"/underwritings/[id]">) {
+  const { id } = await params;
   return (
-    <ComingNext
-      title="Underwriting workspace"
-      breadcrumbs={[
-        { label: "Dashboard", href: ROUTES.dashboard },
-        { label: "Underwriting" },
-      ]}
-    />
+    <Suspense fallback={<WorkspaceSkeleton />}>
+      <WorkspaceView id={Number(id)} />
+    </Suspense>
   );
 }

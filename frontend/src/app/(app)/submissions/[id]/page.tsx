@@ -1,14 +1,12 @@
-import { ComingNext } from "@/components/features/shared/coming-next";
-import { ROUTES } from "@/constants/routes";
+import type { Metadata } from "next";
 
-export default function SubmissionResultPage() {
-  return (
-    <ComingNext
-      title="Evaluation result"
-      breadcrumbs={[
-        { label: "Submissions", href: ROUTES.submissions },
-        { label: "Result" },
-      ]}
-    />
-  );
+import { ResultView } from "@/components/features/result/result-view";
+
+export const metadata: Metadata = { title: "Evaluation result" };
+
+export default async function SubmissionResultPage({
+  params,
+}: PageProps<"/submissions/[id]">) {
+  const { id } = await params;
+  return <ResultView id={Number(id)} />;
 }

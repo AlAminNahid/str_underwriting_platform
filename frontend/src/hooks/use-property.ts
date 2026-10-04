@@ -11,16 +11,16 @@ export function useProperty(zpid: string) {
   return useQuery({
     queryKey: queryKeys.property(zpid),
     queryFn: ({ signal }) => getProperty(zpid, signal),
+    enabled: Boolean(zpid),
   });
 }
 
-/** Waits until the property has told us its market. */
 export function useMarket(id: number | undefined) {
   return useQuery({
     queryKey: queryKeys.market(id ?? -1),
     queryFn: ({ signal }) => getMarket(id!, signal),
     enabled: id !== undefined,
-    staleTime: 5 * 60_000, // markets rarely change
+    staleTime: 5 * 60_000,
   });
 }
 
@@ -28,5 +28,6 @@ export function usePropertyAttempts(zpid: string) {
   return useQuery({
     queryKey: queryKeys.propertyAttempts(zpid),
     queryFn: ({ signal }) => getAttemptsForProperty(zpid, signal),
+    enabled: Boolean(zpid),
   });
 }

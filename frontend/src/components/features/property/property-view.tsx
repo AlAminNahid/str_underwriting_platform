@@ -181,7 +181,6 @@ export function PropertyView({ zpid }: { zpid: string }) {
               sameMarket={training.data?.sameMarket ?? []}
             />
           )}
-          {/* Repeat the main action where the trainee finishes reading. */}
           <FrameworkCard
             action={
               <PropertyCta

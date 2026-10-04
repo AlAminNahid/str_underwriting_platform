@@ -27,7 +27,6 @@ const STEPS = [
   },
 ] as const;
 
-/** `action` renders as the card footer: "here's what you'll calculate → start". */
 export function FrameworkCard({ action }: { action?: ReactNode }) {
   return (
     <Card>

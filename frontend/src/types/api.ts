@@ -111,3 +111,115 @@ export interface SubmissionDto {
 export interface ApiErrorBodyDto {
   detail?: string | { msg: string; loc?: (string | number)[] }[];
 }
+
+export interface OptimizationItemDto {
+  id: number;
+  category: string | null;
+  total_price: DecimalString | null;
+}
+
+export interface OperatingExpenseDto {
+  id: number;
+  expense_name: string | null;
+  monthly_amount: DecimalString | null;
+}
+
+export interface UnderwritingTaxDto {
+  land_assumptions_pct: DecimalString | null;
+  sla_multiplier_pct: DecimalString | null;
+  bonus_amount_pct: DecimalString | null;
+  tax_rate_pct: DecimalString | null;
+  improvement_basis: DecimalString | null;
+  estimated_short_life_assets: DecimalString | null;
+  y1_loss_from_depreciation: DecimalString | null;
+  tax_savings: DecimalString | null;
+}
+
+export interface UnderwritingDetailDto {
+  purchase_details: Record<string, unknown> | null;
+  forecasted_revenue: Record<string, unknown> | null;
+  y1_coc_incl_tax_savings: Record<string, unknown> | null;
+  zillow_property: Record<string, unknown> | null;
+  analyst_notes: string | null;
+}
+
+export type DealTagsDto = {
+  turnkey: boolean | null;
+  furnished: boolean | null;
+  luxury: boolean | null;
+  tax_efficient: boolean | null;
+  new_construction: boolean | null;
+  existing_airbnb: boolean | null;
+  arv: boolean | null;
+  high_cash_on_cash: boolean | null;
+  low_cash_on_cash: boolean | null;
+  add_inground_pool: boolean | null;
+  waterfront: boolean | null;
+  remote: boolean | null;
+  can_support_cohost: boolean | null;
+};
+
+export interface UnderwritingDto extends DealTagsDto {
+  id: number;
+  zpid: string | null;
+  market_id: number | null;
+  is_reference: boolean;
+  deal_status: string | null;
+  deal_submitted: string | null;
+  property_address: string | null;
+  street: string | null;
+  city: string | null;
+  state: string | null;
+  purchase_price: DecimalString | null;
+  total_oop: DecimalString | null;
+  mid_gross_revenue: DecimalString | null;
+  prr: DecimalString | null;
+  l_cash_on_cash: DecimalString | null;
+  m_cash_on_cash: DecimalString | null;
+  h_cash_on_cash: DecimalString | null;
+  created_at: string | null;
+  updated_at: string | null;
+  detail: UnderwritingDetailDto | null;
+  taxes: UnderwritingTaxDto | null;
+  optimization_items: OptimizationItemDto[];
+  operating_expenses: OperatingExpenseDto[];
+}
+
+export interface SaveUnderwritingPayloadDto {
+  purchase_details?: {
+    purchase_price: DecimalString;
+    down_payment_pct: DecimalString;
+    interest_rate: DecimalString;
+    mortgage_years: number;
+    closing_costs_pct: DecimalString;
+  };
+  forecasted_revenue?: {
+    co_hosting_fee_pct: DecimalString;
+    annual_re_appreciation_pct: DecimalString;
+    scenarios: Record<
+      "low" | "mid" | "high",
+      { forecasted_revenue: DecimalString }
+    >;
+  };
+  taxes?: {
+    land_assumptions_pct: DecimalString;
+    sla_multiplier_pct: DecimalString;
+    bonus_amount_pct: DecimalString;
+    tax_rate_pct: DecimalString;
+  };
+  optimization_items?: {
+    category: string | null;
+    total_price: DecimalString | null;
+  }[];
+  operating_expenses?: {
+    expense_name: string | null;
+    monthly_amount: DecimalString | null;
+  }[];
+  tags?: { [K in keyof DealTagsDto]: boolean };
+}
+
+export interface SubmitUnderwritingResultDto {
+  submission: SubmissionDto;
+  underwriting: UnderwritingDto;
+  dashboard: DashboardResultDto;
+}

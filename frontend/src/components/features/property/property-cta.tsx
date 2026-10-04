@@ -1,9 +1,12 @@
-import { ArrowRightIcon } from "lucide-react";
+"use client";
+
+import { ArrowRightIcon, Loader2Icon } from "lucide-react";
 import Link from "next/link";
 
-import { buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ROUTES } from "@/constants/routes";
+import { useStartUnderwriting } from "@/hooks/use-underwriting";
 import { cn } from "@/lib/utils";
 import type { TrainingCase } from "@/types/training";
 
@@ -17,10 +20,11 @@ export function PropertyCta({
   zpid: string;
   trainingCase: TrainingCase | null;
   loading: boolean;
-  /** Stretch to the container, e.g. the button at the end of the page. */
   fullWidth?: boolean;
   testId?: string;
 }) {
+  const start = useStartUnderwriting();
+
   if (loading)
     return <Skeleton className={cn("h-9", fullWidth ? "w-full" : "w-44")} />;
 
@@ -29,28 +33,44 @@ export function PropertyCta({
       ? trainingCase.activeUnderwritingId
       : null;
 
-  const { href, label } =
-    resumeId !== null
-      ? {
-          href: ROUTES.underwriting(resumeId),
-          label: "Resume draft",
-        }
-      : {
-          href: ROUTES.newUnderwriting(zpid),
-          label:
-            trainingCase && trainingCase.attempts > 0
-              ? "Start new attempt"
-              : "Start underwriting",
-        };
+  if (resumeId !== null) {
+    return (
+      <Link
+        href={ROUTES.underwriting(resumeId)}
+        className={cn(buttonVariants({ size: "lg" }), fullWidth && "w-full")}
+        data-testid={testId}
+      >
+        Resume draft
+        <ArrowRightIcon data-icon="inline-end" />
+      </Link>
+    );
+  }
+
+  const label =
+    trainingCase && trainingCase.attempts > 0
+      ? "Start new attempt"
+      : "Start underwriting";
+  const busy = start.isPending || start.isSuccess;
 
   return (
-    <Link
-      href={href}
-      className={cn(buttonVariants({ size: "lg" }), fullWidth && "w-full")}
+    <Button
+      size="lg"
+      className={cn(fullWidth && "w-full")}
+      onClick={() => start.mutate(zpid)}
+      disabled={busy}
       data-testid={testId}
     >
-      {label}
-      <ArrowRightIcon data-icon="inline-end" />
-    </Link>
+      {busy ? (
+        <>
+          <Loader2Icon className="animate-spin" data-icon="inline-start" />
+          Starting…
+        </>
+      ) : (
+        <>
+          {label}
+          <ArrowRightIcon data-icon="inline-end" />
+        </>
+      )}
+    </Button>
   );
 }

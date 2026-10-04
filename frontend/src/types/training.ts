@@ -74,9 +74,12 @@ export interface MarketDetails extends Market {
 export interface Attempt {
   id: number;
   underwritingId: number;
+  zpid: string;
   submittedAt: Date;
   score: Score;
   midForecast: number | null;
   referenceMid: number | null;
   deviation: number;
+  bestThreshold: number;
+  mediumThreshold: number;
 }

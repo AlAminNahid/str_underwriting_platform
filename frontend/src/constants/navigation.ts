@@ -1,4 +1,9 @@
-import { HistoryIcon, LayoutDashboardIcon, TrophyIcon, type LucideIcon } from "lucide-react";
+import {
+  HistoryIcon,
+  LayoutDashboardIcon,
+  TrophyIcon,
+  type LucideIcon,
+} from "lucide-react";
 
 import { ROUTES } from "@/constants/routes";
 
@@ -14,7 +19,6 @@ export const MAIN_NAV: NavItem[] = [
   { label: "Leaderboard", href: ROUTES.leaderboard, icon: TrophyIcon },
 ];
 
-/** Static trainee profile: the API has no users or authentication. */
 export const CURRENT_TRAINEE = {
   name: "Al-Amin Hossain Nahid",
   initials: "AN",
