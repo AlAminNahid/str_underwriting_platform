@@ -1,5 +1,6 @@
 import { streetFromAddress } from "@/lib/address";
 import { toNumber } from "@/lib/number";
+import { toScore } from "@/lib/score";
 import { apiRequest } from "@/services/api-client";
 import type {
   DashboardPropertyDto,
@@ -10,8 +11,6 @@ import type {
   CaseStatus,
   Dashboard,
   DashboardSummary,
-  Rating,
-  Score,
   TrainingCase,
 } from "@/types/training";
 
@@ -20,18 +19,11 @@ const STATUSES: readonly CaseStatus[] = [
   "in_progress",
   "submitted",
 ];
-const RATINGS: readonly Rating[] = ["best", "medium", "low"];
 
 function toStatus(value: string): CaseStatus {
   return STATUSES.includes(value as CaseStatus)
     ? (value as CaseStatus)
     : "not_started";
-}
-
-function toScore(accuracy: string | null, rating: string | null): Score | null {
-  const value = toNumber(accuracy);
-  if (value === null || !RATINGS.includes(rating as Rating)) return null;
-  return { value, rating: rating as Rating };
 }
 
 function toTrainingCase(dto: DashboardPropertyDto): TrainingCase {

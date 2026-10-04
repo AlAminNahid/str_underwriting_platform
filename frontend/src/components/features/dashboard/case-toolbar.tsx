@@ -17,11 +17,11 @@ import {
   CASE_STATUS_FILTERS,
   type CaseStatusFilter,
 } from "@/constants/case-status";
-import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import type { CaseFilters } from "@/lib/dashboard";
 import type { Market } from "@/types/training";
 
 const ALL_MARKETS = "all";
+const SEARCH_DEBOUNCE_MS = 200;
 
 export function CaseToolbar({
   filters,
@@ -41,15 +41,22 @@ export function CaseToolbar({
     setQuery(filters.query);
   }
 
-  const debouncedQuery = useDebouncedValue(query, 200);
+  // Write the search to the URL after a short pause in typing.
   const onChangeRef = useRef(onChange);
+  const searchTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   useEffect(() => {
     onChangeRef.current = onChange;
   });
-  useEffect(() => {
-    if (debouncedQuery.trim() !== filters.query.trim())
-      onChangeRef.current({ query: debouncedQuery });
-  }, [debouncedQuery]);
+  useEffect(() => () => clearTimeout(searchTimer.current), []);
+
+  function handleQueryChange(value: string) {
+    setQuery(value);
+    clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(
+      () => onChangeRef.current({ query: value }),
+      SEARCH_DEBOUNCE_MS,
+    );
+  }
 
   const marketItems = [
     { value: ALL_MARKETS, label: "All markets" },
@@ -97,7 +104,7 @@ export function CaseToolbar({
           <Input
             type="search"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => handleQueryChange(e.target.value)}
             placeholder="Search address or city"
             aria-label="Search properties"
             className="h-9 bg-card pr-8 pl-8 shadow-xs [&::-webkit-search-cancel-button]:hidden"
@@ -106,7 +113,7 @@ export function CaseToolbar({
           {query && (
             <button
               type="button"
-              onClick={() => setQuery("")}
+              onClick={() => handleQueryChange("")}
               className="absolute top-1/2 right-2 grid size-5 -translate-y-1/2 place-items-center rounded text-muted-foreground hover:text-foreground"
               aria-label="Clear search"
             >

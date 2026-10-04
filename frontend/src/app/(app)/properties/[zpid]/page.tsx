@@ -1,14 +1,12 @@
-import { ComingNext } from "@/components/features/shared/coming-next";
-import { ROUTES } from "@/constants/routes";
+import type { Metadata } from "next";
 
-export default function PropertyPage() {
-  return (
-    <ComingNext
-      title="Property"
-      breadcrumbs={[
-        { label: "Dashboard", href: ROUTES.dashboard },
-        { label: "Property" },
-      ]}
-    />
-  );
+import { PropertyView } from "@/components/features/property/property-view";
+
+export const metadata: Metadata = { title: "Property" };
+
+export default async function PropertyPage({
+  params,
+}: PageProps<"/properties/[zpid]">) {
+  const { zpid } = await params;
+  return <PropertyView zpid={zpid} />;
 }

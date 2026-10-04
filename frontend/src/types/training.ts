@@ -44,3 +44,39 @@ export interface Dashboard {
   summary: DashboardSummary;
   cases: TrainingCase[];
 }
+
+export interface Property {
+  zpid: string;
+  street: string;
+  city: string | null;
+  state: string | null;
+  zipcode: string | null;
+  price: number | null;
+  beds: number | null;
+  baths: number | null;
+  areaSqft: number | null;
+  imageUrl: string | null;
+  listingUrl: string | null;
+  homeType: string | null;
+  listingStatus: string | null;
+  timeOnMarket: string | null;
+  market: Market | null;
+}
+
+export interface MarketDetails extends Market {
+  state: string | null;
+  region: string | null;
+  timezone: string | null;
+  description: string | null;
+  propertyCount: number;
+}
+
+export interface Attempt {
+  id: number;
+  underwritingId: number;
+  submittedAt: Date;
+  score: Score;
+  midForecast: number | null;
+  referenceMid: number | null;
+  deviation: number;
+}

@@ -27,6 +27,34 @@ export function formatInteger(value: number | null | undefined): string {
   return value == null ? "—" : integer.format(value);
 }
 
+const shortDate = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+  year: "numeric",
+});
+
+/** Oct 4, 2026 */
+export function formatDate(value: Date | null | undefined): string {
+  return value == null || Number.isNaN(value.getTime())
+    ? "—"
+    : shortDate.format(value);
+}
+
+/** 0.064 → "6.4%" */
+export function formatPercent(
+  fraction: number | null | undefined,
+  digits = 1,
+): string {
+  return fraction == null ? "—" : `${(fraction * 100).toFixed(digits)}%`;
+}
+
+/** "SINGLE_FAMILY" → "Single family" */
+export function humanize(value: string | null | undefined): string {
+  if (!value) return "—";
+  const text = value.replace(/[_-]+/g, " ").trim().toLowerCase();
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
 export function pluralize(
   count: number,
   singular: string,
