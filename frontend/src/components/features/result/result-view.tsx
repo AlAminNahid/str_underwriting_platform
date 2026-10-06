@@ -2,7 +2,6 @@
 
 import {
   ArrowRightIcon,
-  CloudOffIcon,
   FileQuestionIcon,
   InfoIcon,
   RotateCcwIcon,
@@ -11,9 +10,10 @@ import Link from "next/link";
 
 import { AttemptHistoryCard } from "@/components/features/property/attempt-history-card";
 import { ScoreBadge } from "@/components/features/shared/score-badge";
+import { LoadError } from "@/components/features/shared/load-error";
 import { PageBreadcrumbs } from "@/components/layouts/breadcrumbs";
 import { PageHeader } from "@/components/layouts/page-header";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -94,23 +94,11 @@ export function ResultView({ id }: { id: number }) {
       <>
         <PageBreadcrumbs items={crumbs} />
         <Card className="py-0">
-          <EmptyState
-            icon={CloudOffIcon}
+          <LoadError
             title="We couldn't load this result"
-            description={
-              submission.error instanceof ApiError
-                ? submission.error.message
-                : "Something went wrong. Try again in a moment."
-            }
-            action={
-              <Button
-                size="lg"
-                onClick={() => submission.refetch()}
-                disabled={submission.isRefetching}
-              >
-                {submission.isRefetching ? "Retrying…" : "Try again"}
-              </Button>
-            }
+            error={submission.error}
+            onRetry={() => submission.refetch()}
+            isRetrying={submission.isRefetching}
             data-testid="result-error"
           />
         </Card>

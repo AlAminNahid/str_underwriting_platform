@@ -1,11 +1,9 @@
 "use client";
 
-import { CloudOffIcon } from "lucide-react";
 import { useMemo } from "react";
 
-import { Button } from "@/components/ui/button";
+import { LoadError } from "@/components/features/shared/load-error";
 import { Card } from "@/components/ui/card";
-import { EmptyState } from "@/components/ui/empty-state";
 import { useCaseFilters } from "@/hooks/use-case-filters";
 import { useDashboard } from "@/hooks/use-dashboard";
 import {
@@ -15,7 +13,6 @@ import {
   getMarkets,
 } from "@/lib/dashboard";
 import { pluralize } from "@/lib/format";
-import { ApiError } from "@/services/api-client";
 
 import { CaseEmptyState } from "./case-empty-state";
 import { CaseGrid } from "./case-grid";
@@ -42,19 +39,11 @@ export function DashboardView() {
   if (error || !derived) {
     return (
       <Card className="py-0" data-testid="dashboard-error">
-        <EmptyState
-          icon={CloudOffIcon}
+        <LoadError
           title="We couldn't load your training cases"
-          description={
-            error instanceof ApiError
-              ? error.message
-              : "Something went wrong. Try again in a moment."
-          }
-          action={
-            <Button size="lg" onClick={() => refetch()} disabled={isRefetching}>
-              {isRefetching ? "Retrying…" : "Try again"}
-            </Button>
-          }
+          error={error}
+          onRetry={() => refetch()}
+          isRetrying={isRefetching}
         />
       </Card>
     );

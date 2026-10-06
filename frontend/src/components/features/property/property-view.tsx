@@ -1,19 +1,15 @@
 "use client";
 
-import {
-  CloudOffIcon,
-  ExternalLinkIcon,
-  MapPinIcon,
-  MapPinOffIcon,
-} from "lucide-react";
+import { ExternalLinkIcon, MapPinIcon, MapPinOffIcon } from "lucide-react";
 import Link from "next/link";
 
 import { PropertyImage } from "@/components/features/shared/property-image";
 import { ScoringBands } from "@/components/features/shared/scoring-bands";
 import { StatusBadge } from "@/components/features/shared/status-badge";
+import { LoadError } from "@/components/features/shared/load-error";
 import { PageBreadcrumbs } from "@/components/layouts/breadcrumbs";
 import { PageHeader } from "@/components/layouts/page-header";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -85,23 +81,11 @@ export function PropertyView({ zpid }: { zpid: string }) {
               }
             />
           ) : (
-            <EmptyState
-              icon={CloudOffIcon}
+            <LoadError
               title="We couldn't load this property"
-              description={
-                property.error instanceof ApiError
-                  ? property.error.message
-                  : "Something went wrong. Try again in a moment."
-              }
-              action={
-                <Button
-                  size="lg"
-                  onClick={() => property.refetch()}
-                  disabled={property.isRefetching}
-                >
-                  {property.isRefetching ? "Retrying…" : "Try again"}
-                </Button>
-              }
+              error={property.error}
+              onRetry={() => property.refetch()}
+              isRetrying={property.isRefetching}
             />
           )}
         </Card>

@@ -24,11 +24,13 @@ interface RequestOptions extends Omit<RequestInit, "body"> {
 }
 
 function messageFromBody(body: ApiErrorBodyDto | null, status: number): string {
+  if (status >= 500)
+    return "Something went wrong on our end. Please try again shortly.";
   const detail = body?.detail;
   if (typeof detail === "string") return detail;
   if (Array.isArray(detail) && detail.length > 0)
     return detail.map((d) => d.msg).join("; ");
-  return `The request failed with status ${status}.`;
+  return "Something went wrong. Please try again.";
 }
 
 export async function apiRequest<T>(
@@ -60,9 +62,8 @@ export async function apiRequest<T>(
     if (signal?.aborted) throw error;
     throw new ApiError(
       timeout.aborted
-        ? "The training API took too long to respond. Try again."
-        : "Can't reach the training API. Check that the backend is running on " +
-            `${env.NEXT_PUBLIC_API_URL}.`,
+        ? "This is taking longer than usual. Please try again."
+        : "We're having trouble connecting right now. Please try again in a moment.",
       0,
     );
   }

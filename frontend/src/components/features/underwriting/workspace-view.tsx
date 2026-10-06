@@ -2,7 +2,6 @@
 
 import {
   CircleCheckBigIcon,
-  CloudOffIcon,
   FileQuestionIcon,
   LockIcon,
   MapPinIcon,
@@ -10,9 +9,10 @@ import {
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { LoadError } from "@/components/features/shared/load-error";
 import { PageBreadcrumbs } from "@/components/layouts/breadcrumbs";
 import { PageHeader } from "@/components/layouts/page-header";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ROUTES } from "@/constants/routes";
@@ -82,23 +82,11 @@ export function WorkspaceView({ id }: { id: number }) {
       <>
         <PageBreadcrumbs items={crumbs} />
         <Blocked>
-          <EmptyState
-            icon={CloudOffIcon}
+          <LoadError
             title="We couldn't load this underwriting"
-            description={
-              query.error instanceof ApiError
-                ? query.error.message
-                : "Something went wrong. Try again in a moment."
-            }
-            action={
-              <Button
-                size="lg"
-                onClick={() => query.refetch()}
-                disabled={query.isRefetching}
-              >
-                {query.isRefetching ? "Retrying…" : "Try again"}
-              </Button>
-            }
+            error={query.error}
+            onRetry={() => query.refetch()}
+            isRetrying={query.isRefetching}
             data-testid="workspace-error"
           />
         </Blocked>
