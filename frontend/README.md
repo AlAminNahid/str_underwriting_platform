@@ -34,9 +34,9 @@ src/
 │       ├── page.tsx             # /                      dashboard
 │       ├── properties/[zpid]/   # /properties/:zpid      property page
 │       ├── underwritings/[id]/  # /underwritings/:id     workspace + review & submit
+│       ├── submissions/         # /submissions           all graded attempts
 │       ├── submissions/[id]/    # /submissions/:id       evaluation result
-│       ├── submissions/         # placeholder (next step)
-│       └── leaderboard/         # placeholder (next step)
+│       └── leaderboard/         # /leaderboard           ranked attempts
 ├── components/
 │   ├── ui/                      # shadcn primitives + empty-state
 │   ├── layouts/                 # app shell, sidebar, header, breadcrumbs, page header, profile
@@ -45,11 +45,13 @@ src/
 │       ├── property/            # details, market, framework, attempt history, start/resume button
 │       ├── underwriting/        # workspace: steps, fields, line items, deal summary, review, submit dialog
 │       ├── result/              # score hero, band chart, leaderboard card
-│       └── shared/              # score/status badges, property image, scoring bands
+│       ├── submissions/         # submissions table with property filter
+│       ├── leaderboard/         # ranked attempts table
+│       └── shared/              # score/status badges, property image and cell, scoring bands, load error
 ├── hooks/                       # React Query hooks, autosave, URL-state hooks
 ├── services/                    # API client + one service per resource (fetch + map to app types)
 ├── lib/                         # pure logic: formatting, stats, leaderboard, score explanation
-│   └── underwriting/            # calculations, validation schema, form ⇄ API mapper, draft backup
+│   └── underwriting/            # calculations, validation schema, form ⇄ API mapper, draft backup, pre-submit check
 ├── types/                       # api.ts (raw API shapes) · training.ts · underwriting.ts (app types)
 ├── constants/                   # routes, query keys, navigation, scoring bands, statuses, workspace config
 └── config/                      # validated env, site metadata

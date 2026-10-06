@@ -1,11 +1,12 @@
-export type DecimalString = string;
+export type DecimalNumber = number;
+export type DecimalInput = string;
 
 export interface DashboardSummaryDto {
   total_properties: number;
   submitted: number;
   in_progress: number;
   not_started: number;
-  average_accuracy: DecimalString | null;
+  average_accuracy: DecimalNumber | null;
 }
 
 export interface DashboardPropertyDto {
@@ -26,9 +27,9 @@ export interface DashboardPropertyDto {
   market_name: string | null;
   status: string;
   attempts: number;
-  latest_accuracy: DecimalString | null;
+  latest_accuracy: DecimalNumber | null;
   latest_rating: string | null;
-  best_accuracy: DecimalString | null;
+  best_accuracy: DecimalNumber | null;
   best_rating: string | null;
   active_underwriting_id: number | null;
   latest_submission_id: number | null;
@@ -87,14 +88,14 @@ export interface MarketDto {
 
 export interface ScoreResultDto {
   rating: string;
-  accuracy: DecimalString;
+  accuracy: DecimalNumber;
   metric: string;
   label: string;
-  candidate: DecimalString | null;
-  reference: DecimalString | null;
-  deviation: DecimalString;
-  best_threshold: DecimalString;
-  medium_threshold: DecimalString;
+  candidate: DecimalNumber | null;
+  reference: DecimalNumber | null;
+  deviation: DecimalNumber;
+  best_threshold: DecimalNumber;
+  medium_threshold: DecimalNumber;
 }
 
 export interface SubmissionDto {
@@ -103,7 +104,7 @@ export interface SubmissionDto {
   reference_underwriting_id: number | null;
   zpid: string;
   rating: string;
-  accuracy: DecimalString;
+  accuracy: DecimalNumber;
   breakdown: ScoreResultDto;
   submitted_at: string;
 }
@@ -115,24 +116,24 @@ export interface ApiErrorBodyDto {
 export interface OptimizationItemDto {
   id: number;
   category: string | null;
-  total_price: DecimalString | null;
+  total_price: DecimalNumber | null;
 }
 
 export interface OperatingExpenseDto {
   id: number;
   expense_name: string | null;
-  monthly_amount: DecimalString | null;
+  monthly_amount: DecimalNumber | null;
 }
 
 export interface UnderwritingTaxDto {
-  land_assumptions_pct: DecimalString | null;
-  sla_multiplier_pct: DecimalString | null;
-  bonus_amount_pct: DecimalString | null;
-  tax_rate_pct: DecimalString | null;
-  improvement_basis: DecimalString | null;
-  estimated_short_life_assets: DecimalString | null;
-  y1_loss_from_depreciation: DecimalString | null;
-  tax_savings: DecimalString | null;
+  land_assumptions_pct: DecimalNumber | null;
+  sla_multiplier_pct: DecimalNumber | null;
+  bonus_amount_pct: DecimalNumber | null;
+  tax_rate_pct: DecimalNumber | null;
+  improvement_basis: DecimalNumber | null;
+  estimated_short_life_assets: DecimalNumber | null;
+  y1_loss_from_depreciation: DecimalNumber | null;
+  tax_savings: DecimalNumber | null;
 }
 
 export interface UnderwritingDetailDto {
@@ -170,13 +171,13 @@ export interface UnderwritingDto extends DealTagsDto {
   street: string | null;
   city: string | null;
   state: string | null;
-  purchase_price: DecimalString | null;
-  total_oop: DecimalString | null;
-  mid_gross_revenue: DecimalString | null;
-  prr: DecimalString | null;
-  l_cash_on_cash: DecimalString | null;
-  m_cash_on_cash: DecimalString | null;
-  h_cash_on_cash: DecimalString | null;
+  purchase_price: DecimalNumber | null;
+  total_oop: DecimalNumber | null;
+  mid_gross_revenue: DecimalNumber | null;
+  prr: DecimalNumber | null;
+  l_cash_on_cash: DecimalNumber | null;
+  m_cash_on_cash: DecimalNumber | null;
+  h_cash_on_cash: DecimalNumber | null;
   created_at: string | null;
   updated_at: string | null;
   detail: UnderwritingDetailDto | null;
@@ -187,33 +188,33 @@ export interface UnderwritingDto extends DealTagsDto {
 
 export interface SaveUnderwritingPayloadDto {
   purchase_details?: {
-    purchase_price: DecimalString;
-    down_payment_pct: DecimalString;
-    interest_rate: DecimalString;
+    purchase_price: DecimalInput;
+    down_payment_pct: DecimalInput;
+    interest_rate: DecimalInput;
     mortgage_years: number;
-    closing_costs_pct: DecimalString;
+    closing_costs_pct: DecimalInput;
   };
   forecasted_revenue?: {
-    co_hosting_fee_pct: DecimalString;
-    annual_re_appreciation_pct: DecimalString;
+    co_hosting_fee_pct: DecimalInput;
+    annual_re_appreciation_pct: DecimalInput;
     scenarios: Record<
       "low" | "mid" | "high",
-      { forecasted_revenue: DecimalString }
+      { forecasted_revenue: DecimalInput }
     >;
   };
   taxes?: {
-    land_assumptions_pct: DecimalString;
-    sla_multiplier_pct: DecimalString;
-    bonus_amount_pct: DecimalString;
-    tax_rate_pct: DecimalString;
+    land_assumptions_pct: DecimalInput;
+    sla_multiplier_pct: DecimalInput;
+    bonus_amount_pct: DecimalInput;
+    tax_rate_pct: DecimalInput;
   };
   optimization_items?: {
     category: string | null;
-    total_price: DecimalString | null;
+    total_price: DecimalInput | null;
   }[];
   operating_expenses?: {
     expense_name: string | null;
-    monthly_amount: DecimalString | null;
+    monthly_amount: DecimalInput | null;
   }[];
   tags?: { [K in keyof DealTagsDto]: boolean };
 }

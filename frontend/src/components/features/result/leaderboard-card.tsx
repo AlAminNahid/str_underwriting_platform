@@ -1,16 +1,11 @@
-import Link from "next/link";
-
 import { ScoreBadge } from "@/components/features/shared/score-badge";
-import { buttonVariants } from "@/components/ui/button";
 import {
   Card,
-  CardAction,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ROUTES } from "@/constants/routes";
 import { formatDate, formatPercent } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { Attempt, TrainingCase } from "@/types/training";
@@ -67,14 +62,6 @@ export function LeaderboardCard({
             ? `This attempt is #${position} of your ${ranked.length} graded attempts, across all properties`
             : "Your graded attempts across all properties, best first"}
         </CardDescription>
-        <CardAction>
-          <Link
-            href={ROUTES.leaderboard}
-            className={buttonVariants({ variant: "link", size: "sm" })}
-          >
-            View all
-          </Link>
-        </CardAction>
       </CardHeader>
       {loading ? (
         <div className="space-y-2 p-4">

@@ -1,7 +1,6 @@
 import {
   HistoryIcon,
   LayoutDashboardIcon,
-  TrophyIcon,
   type LucideIcon,
 } from "lucide-react";
 
@@ -16,7 +15,6 @@ export interface NavItem {
 export const MAIN_NAV: NavItem[] = [
   { label: "Dashboard", href: ROUTES.dashboard, icon: LayoutDashboardIcon },
   { label: "Submissions", href: ROUTES.submissions, icon: HistoryIcon },
-  { label: "Leaderboard", href: ROUTES.leaderboard, icon: TrophyIcon },
 ];
 
 export const CURRENT_TRAINEE = {

@@ -101,8 +101,10 @@ export function NumericField({
           autoComplete="off"
           placeholder={placeholder}
           value={groupThousands && !editing ? formatForDisplay(raw) : raw}
-          onChange={(e) => onChange(sanitize(e.target.value))}
-          onFocus={() => setEditing(true)}
+          onChange={(e) => {
+            setEditing(true);
+            onChange(sanitize(e.target.value));
+          }}
           onBlur={() => {
             setEditing(false);
             onBlur();

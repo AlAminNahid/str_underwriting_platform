@@ -29,7 +29,7 @@ function fractionToPercentInput(value: unknown): string {
   return n === null ? "" : String(Number((n * 100).toFixed(6)));
 }
 
-function fractionToPercent(value: string | null): number | null {
+function fractionToPercent(value: number | null): number | null {
   const n = toNumber(value);
   return n === null ? null : n * 100;
 }
