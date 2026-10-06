@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ROUTES } from "@/constants/routes";
-import { formatPercent } from "@/lib/format";
+import { formatDate, formatPercent } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { Attempt, TrainingCase } from "@/types/training";
 
@@ -50,7 +50,7 @@ export function LeaderboardCard({
           {street(a.zpid)}
         </span>
         <span className="block text-xs text-muted-foreground tabular-nums">
-          {a.id === currentId ? "This attempt · " : ""}
+          {a.id === currentId ? "This attempt" : formatDate(a.submittedAt)} ·{" "}
           {formatPercent(a.deviation)} off
         </span>
       </span>
@@ -61,11 +61,11 @@ export function LeaderboardCard({
   return (
     <Card className="gap-0 pb-0" data-testid="result-leaderboard">
       <CardHeader className="border-b">
-        <CardTitle>Leaderboard</CardTitle>
+        <CardTitle>Your leaderboard</CardTitle>
         <CardDescription>
           {position > 0 && ranked
-            ? `You're #${position} of ${ranked.length} graded attempts`
-            : "Your graded attempts"}
+            ? `This attempt is #${position} of your ${ranked.length} graded attempts, across all properties`
+            : "Your graded attempts across all properties, best first"}
         </CardDescription>
         <CardAction>
           <Link

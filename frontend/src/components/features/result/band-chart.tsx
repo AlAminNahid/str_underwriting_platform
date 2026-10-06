@@ -39,6 +39,8 @@ export function BandChart({ attempt }: { attempt: Attempt }) {
       x={x(v)}
       y={46}
       textAnchor="middle"
+      paintOrder="stroke"
+      strokeWidth={4}
       className={cn("text-[10px] font-semibold tracking-wide", cls)}
     >
       {text}
@@ -96,6 +98,7 @@ export function BandChart({ attempt }: { attempt: Attempt }) {
         strokeWidth={1.5}
         strokeDasharray="3 3"
       />
+      {zoneLabel(ref, "BEST", "fill-success stroke-success-soft")}
       {ticks.map(([f, label]) => (
         <g key={label}>
           <line

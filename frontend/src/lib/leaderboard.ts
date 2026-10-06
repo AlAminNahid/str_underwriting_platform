@@ -9,6 +9,12 @@ export function rankAttempts(attempts: Attempt[]): Attempt[] {
   );
 }
 
+export function newestFirst(attempts: Attempt[]): Attempt[] {
+  return [...attempts].sort(
+    (a, b) => b.submittedAt.getTime() - a.submittedAt.getTime() || b.id - a.id,
+  );
+}
+
 export function rankOf(ranked: Attempt[], id: number): number | null {
   const index = ranked.findIndex((a) => a.id === id);
   return index === -1 ? null : index + 1;

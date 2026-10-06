@@ -92,6 +92,8 @@ export const NEW_DRAFT_ASSUMPTIONS = {
   appreciationPct: "0",
 } as const;
 
+export const PRR_SANITY_RANGE = { min: 8, max: 50 } as const;
+
 export const OPEX_MULTIPLIERS: Record<ScenarioKey, number> = {
   low: 0.96,
   mid: 1,

@@ -1,5 +1,7 @@
 import { Card } from "@/components/ui/card";
+import { RATING_TEXT } from "@/constants/scoring";
 import { formatCurrency, formatPercent } from "@/lib/format";
+import { formatSignedDeviation } from "@/lib/score";
 import type { ScoreExplanation } from "@/lib/score-explanation";
 import { cn } from "@/lib/utils";
 import type { Attempt, Rating } from "@/types/training";
@@ -8,11 +10,6 @@ const RING: Record<Rating, string> = {
   best: "stroke-success",
   medium: "stroke-warning",
   low: "stroke-danger",
-};
-const TEXT: Record<Rating, string> = {
-  best: "text-success",
-  medium: "text-warning",
-  low: "text-danger",
 };
 
 const RADIUS = 56;
@@ -30,10 +27,6 @@ export function ScoreHero({
   rank: { position: number; total: number } | null;
 }) {
   const { score, midForecast, referenceMid, deviation } = attempt;
-  const sign =
-    midForecast !== null && referenceMid !== null && midForecast < referenceMid
-      ? "−"
-      : "+";
 
   return (
     <Card className="gap-0 py-0" data-testid="score-hero">
@@ -106,11 +99,11 @@ export function ScoreHero({
             ["Analyst reference", formatCurrency(referenceMid), undefined],
             [
               "Deviation",
-              midForecast === null ? "—" : `${sign}${formatPercent(deviation)}`,
-              TEXT[score.rating],
+              formatSignedDeviation(attempt),
+              RATING_TEXT[score.rating],
             ],
             [
-              "Leaderboard",
+              "Your rank",
               rank ? `#${rank.position}` : "—",
               undefined,
               rank ? `of ${rank.total}` : undefined,

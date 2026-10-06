@@ -8,7 +8,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-import { AttemptHistoryCard } from "@/components/features/property/attempt-history-card";
 import { ScoreBadge } from "@/components/features/shared/score-badge";
 import { LoadError } from "@/components/features/shared/load-error";
 import { PageBreadcrumbs } from "@/components/layouts/breadcrumbs";
@@ -24,7 +23,11 @@ import {
 import { EmptyState } from "@/components/ui/empty-state";
 import { ROUTES } from "@/constants/routes";
 import { useDashboard } from "@/hooks/use-dashboard";
-import { useProperty, usePropertyAttempts } from "@/hooks/use-property";
+import {
+  useMarket,
+  useProperty,
+  usePropertyAttempts,
+} from "@/hooks/use-property";
 import { useRankedAttempts, useSubmission } from "@/hooks/use-submission";
 import { formatDateTime } from "@/lib/format";
 import { rankOf } from "@/lib/leaderboard";
@@ -41,15 +44,15 @@ export function ResultView({ id }: { id: number }) {
   const attempt = submission.data;
   const zpid = attempt?.zpid ?? "";
   const property = useProperty(zpid);
+  const market = useMarket(property.data?.market?.id);
   const history = usePropertyAttempts(zpid);
   const ranked = useRankedAttempts();
   const dashboard = useDashboard();
 
   const street = property.data?.street ?? "Property";
   const crumbs = [
-    { label: "Dashboard", href: ROUTES.dashboard },
-    ...(zpid ? [{ label: street, href: ROUTES.property(zpid) }] : []),
-    { label: "Result" },
+    { label: "Submissions", href: ROUTES.submissions },
+    { label: zpid ? `${street} · Result` : "Result" },
   ];
 
   const invalidId = !Number.isInteger(id) || id <= 0;
@@ -106,7 +109,7 @@ export function ResultView({ id }: { id: number }) {
     );
   }
 
-  const explanation = explainScore(attempt);
+  const explanation = explainScore(attempt, market.data ?? null);
   const attempts = history.data ?? [];
   const index = attempts.findIndex((a) => a.id === attempt.id);
   const attemptNumber = index === -1 ? null : attempts.length - index;
@@ -202,7 +205,7 @@ export function ResultView({ id }: { id: number }) {
             <CardHeader>
               <CardTitle>What to look at next</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-3">
               <p className="flex gap-3 rounded-lg border bg-muted/40 px-4 py-3 text-sm text-foreground/80">
                 <InfoIcon
                   className="mt-0.5 size-4 shrink-0 text-muted-foreground"
@@ -210,24 +213,29 @@ export function ResultView({ id }: { id: number }) {
                 />
                 {explanation.tip}
               </p>
+              {explanation.marketContext && (
+                <figure
+                  className="border-l-2 border-gold pl-4 text-sm"
+                  data-testid="market-context"
+                >
+                  <figcaption className="text-xs font-medium text-muted-foreground">
+                    About the {explanation.marketContext.name} market
+                  </figcaption>
+                  <blockquote className="mt-1 text-foreground/80">
+                    {explanation.marketContext.description}
+                  </blockquote>
+                </figure>
+              )}
             </CardContent>
           </Card>
         </div>
 
-        <div className="min-w-0 space-y-6">
+        <div className="min-w-0">
           <LeaderboardCard
             currentId={attempt.id}
             ranked={ranked.data}
             loading={ranked.isPending}
             cases={cases}
-          />
-          <AttemptHistoryCard
-            title="Attempts on this property"
-            attempts={history.data}
-            loading={history.isPending}
-            failed={history.isError}
-            onRetry={() => history.refetch()}
-            currentId={attempt.id}
           />
         </div>
       </div>

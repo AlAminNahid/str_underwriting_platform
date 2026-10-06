@@ -71,9 +71,13 @@ export function CaseCard({
   ]
     .filter(Boolean)
     .join(" · ");
+  const scores =
+    c.attempts > 1 && c.latestScore && c.bestScore
+      ? ` · Latest ${Math.round(c.latestScore.value)} · Best ${Math.round(c.bestScore.value)}`
+      : "";
   const note =
     c.attempts > 0
-      ? `${pluralize(c.attempts, "attempt")}${c.status === "in_progress" ? " · new draft open" : ""}`
+      ? `${pluralize(c.attempts, "attempt")}${scores}${c.status === "in_progress" ? " · new draft open" : ""}`
       : c.status === "in_progress"
         ? "Draft saved. Pick up where you stopped."
         : null;

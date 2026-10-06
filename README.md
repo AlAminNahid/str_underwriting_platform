@@ -101,7 +101,7 @@ The underwriting chain from the brief — **Total Out of Pocket → Annual Free 
 | Area                                                              | Status                                                            |
 | ----------------------------------------------------------------- | ----------------------------------------------------------------- |
 | Dashboard, property page, workspace, review & submit, result page | Done                                                              |
-| Submissions list and Leaderboard pages                            | Next — currently placeholder pages                                |
+| Submissions list and Leaderboard pages                            | Done                                                              |
 | Playwright end-to-end suite                                       | Next — `npm run test:e2e` is wired up; the suite is being written |
 | Video walkthrough                                                 | To do                                                             |
 

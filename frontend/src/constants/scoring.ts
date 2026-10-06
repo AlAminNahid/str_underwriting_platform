@@ -22,3 +22,9 @@ export const RATING_TONE: Record<Rating, string> = {
   medium: "bg-warning text-white",
   low: "bg-danger text-white",
 };
+
+export const RATING_TEXT: Record<Rating, string> = {
+  best: "text-success",
+  medium: "text-warning",
+  low: "text-danger",
+};

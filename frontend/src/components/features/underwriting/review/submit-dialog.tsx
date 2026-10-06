@@ -1,6 +1,6 @@
 "use client";
 
-import { CircleAlertIcon, Loader2Icon } from "lucide-react";
+import { CircleAlertIcon, Loader2Icon, TriangleAlertIcon } from "lucide-react";
 
 import {
   AlertDialog,
@@ -13,6 +13,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { formatCurrency } from "@/lib/format";
+import { getSanityWarning } from "@/lib/underwriting/sanity-check";
 import type { UnderwritingCalculation } from "@/types/underwriting";
 
 export function SubmitDialog({
@@ -36,6 +37,7 @@ export function SubmitDialog({
 }) {
   const mid = calculation.scenarios.mid;
   const coc = mid?.cashOnCash;
+  const warning = getSanityWarning(calculation);
 
   return (
     <AlertDialog
@@ -52,9 +54,23 @@ export function SubmitDialog({
           </AlertDialogTitle>
           <AlertDialogDescription className="text-[15px] leading-relaxed">
             Your draft for {street} will be locked. Your Mid revenue forecast is
-            compared with the analyst&apos;s reference.
+            compared with the analyst&apos;s reference. You can start a new
+            attempt afterward.
           </AlertDialogDescription>
         </AlertDialogHeader>
+
+        {warning && (
+          <p
+            className="mx-7 mb-3 flex gap-2 rounded-lg border border-warning/30 bg-warning-soft px-3 py-2.5 text-sm text-foreground/80"
+            data-testid="submit-warning"
+          >
+            <TriangleAlertIcon
+              className="mt-0.5 size-4 shrink-0 text-warning"
+              aria-hidden
+            />
+            <span>{warning}</span>
+          </p>
+        )}
 
         <dl className="mx-7 divide-y text-[15px]">
           {[
