@@ -79,7 +79,7 @@ export function useSubmitUnderwriting() {
         queryKey: queryKeys.underwriting(id),
         refetchType: "none",
       });
-      router.replace(ROUTES.submission(result.submission.id));
+      router.replace(`${ROUTES.submission(result.submission.id)}?submitted=1`);
     },
   });
 }

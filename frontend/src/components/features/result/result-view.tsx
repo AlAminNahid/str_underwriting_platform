@@ -7,6 +7,7 @@ import {
   RotateCcwIcon,
 } from "lucide-react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 import { ScoreBadge } from "@/components/features/shared/score-badge";
 import { LoadError } from "@/components/features/shared/load-error";
@@ -40,6 +41,7 @@ import { ResultSkeleton } from "./result-skeleton";
 import { ScoreHero } from "./score-hero";
 
 export function ResultView({ id }: { id: number }) {
+  const justSubmitted = useSearchParams().get("submitted") === "1";
   const submission = useSubmission(id);
   const attempt = submission.data;
   const zpid = attempt?.zpid ?? "";
@@ -116,9 +118,6 @@ export function ResultView({ id }: { id: number }) {
   const previous = index === -1 ? null : (attempts[index + 1] ?? null);
   const position = ranked.data ? rankOf(ranked.data, attempt.id) : null;
   const cases = dashboard.data?.cases ?? [];
-  const nextCase = cases.find(
-    (c) => c.status === "not_started" && c.zpid !== attempt.zpid,
-  );
   const location = [property.data?.city, property.data?.state]
     .filter(Boolean)
     .join(", ");
@@ -162,15 +161,15 @@ export function ResultView({ id }: { id: number }) {
               <RotateCcwIcon data-icon="inline-start" />
               Try again
             </Link>
-            <Link
-              href={
-                nextCase ? ROUTES.property(nextCase.zpid) : ROUTES.dashboard
-              }
-              className={buttonVariants({ size: "lg" })}
-            >
-              {nextCase ? "Next case" : "Back to dashboard"}
-              <ArrowRightIcon data-icon="inline-end" />
-            </Link>
+            {justSubmitted && (
+              <Link
+                href={ROUTES.dashboard}
+                className={buttonVariants({ size: "lg" })}
+              >
+                Back to dashboard
+                <ArrowRightIcon data-icon="inline-end" />
+              </Link>
+            )}
           </>
         }
       />

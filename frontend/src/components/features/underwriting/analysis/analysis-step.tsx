@@ -1,11 +1,15 @@
 "use client";
 
+import { useFormContext, useWatch } from "react-hook-form";
+
 import {
   Card,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { NEW_DRAFT_ASSUMPTIONS } from "@/constants/underwriting";
+import type { UnderwritingFormValues } from "@/types/underwriting";
 
 import { NumericField } from "../fields/numeric-field";
 import { SectionCard, SectionStatus } from "../section-card";
@@ -14,6 +18,12 @@ import { ScenarioTable } from "./scenario-table";
 
 export function AnalysisStep() {
   const { calculation } = useWorkspace();
+  const { control } = useFormContext<UnderwritingFormValues>();
+  const coHostingFeePct = useWatch({ control, name: "coHostingFeePct" });
+  const appreciationPct = useWatch({ control, name: "appreciationPct" });
+  const assumptionsUntouched =
+    coHostingFeePct === NEW_DRAFT_ASSUMPTIONS.coHostingFeePct &&
+    appreciationPct === NEW_DRAFT_ASSUMPTIONS.appreciationPct;
 
   return (
     <>
@@ -49,8 +59,13 @@ export function AnalysisStep() {
       <SectionCard
         id="section-assumptions"
         title="Assumptions"
-        description="Optional. Both start at 0%; change them if they apply to this deal."
-        status={<SectionStatus sections={["assumptions"]} />}
+        description="Both start at 0%; change them if they apply to this deal."
+        status={
+          <SectionStatus
+            sections={["assumptions"]}
+            optionalAndEmpty={assumptionsUntouched}
+          />
+        }
       >
         <div className="grid gap-4 sm:grid-cols-2">
           <NumericField

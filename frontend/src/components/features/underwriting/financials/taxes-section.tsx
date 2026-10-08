@@ -11,6 +11,13 @@ import { NumericField } from "../fields/numeric-field";
 import { SectionCard, SectionStatus } from "../section-card";
 import { useWorkspace } from "../workspace-context";
 
+const TAX_FIELD_MEANING: Record<keyof typeof TRAINING_TAX_DEFAULTS, string> = {
+  landPct: "Non-depreciable land",
+  shortLifeAssetPct: "Fast-depreciating items",
+  bonusDepreciationPct: "Deducted in year 1",
+  taxRatePct: "Your marginal rate",
+};
+
 export function TaxesSection() {
   const { control, setValue } = useFormContext<UnderwritingFormValues>();
   const { calculation: c } = useWorkspace();
@@ -21,16 +28,12 @@ export function TaxesSection() {
   const allDefaults = (
     Object.keys(TRAINING_TAX_DEFAULTS) as (keyof typeof TRAINING_TAX_DEFAULTS)[]
   ).every(isDefault);
-  const helpFor = (key: keyof typeof TRAINING_TAX_DEFAULTS) =>
-    isDefault(key)
-      ? "Training default"
-      : `Training default is ${TRAINING_TAX_DEFAULTS[key]}%`;
 
   return (
     <SectionCard
       id="section-taxes"
       title="Taxes"
-      description="Estimates first-year tax savings from cost-segregation depreciation."
+      description="Estimates first-year tax savings from cost-segregation depreciation. Starts at common training values — edit any of them to match your deal."
       status={<SectionStatus sections={["taxes"]} />}
       headerAction={
         !allDefaults && (
@@ -52,25 +55,25 @@ export function TaxesSection() {
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <NumericField
           name="taxes.landPct"
-          help={helpFor("landPct")}
+          help={TAX_FIELD_MEANING.landPct}
           kind="percent"
           label="Land"
         />
         <NumericField
           name="taxes.shortLifeAssetPct"
-          help={helpFor("shortLifeAssetPct")}
+          help={TAX_FIELD_MEANING.shortLifeAssetPct}
           kind="percent"
           label="Short-life assets"
         />
         <NumericField
           name="taxes.bonusDepreciationPct"
-          help={helpFor("bonusDepreciationPct")}
+          help={TAX_FIELD_MEANING.bonusDepreciationPct}
           kind="percent"
           label="Bonus depreciation"
         />
         <NumericField
           name="taxes.taxRatePct"
-          help={helpFor("taxRatePct")}
+          help={TAX_FIELD_MEANING.taxRatePct}
           kind="percent"
           label="Tax rate"
         />

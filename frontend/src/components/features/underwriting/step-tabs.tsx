@@ -21,7 +21,7 @@ export function StepTabs({
     <div
       role="tablist"
       aria-label="Underwriting steps"
-      className="mb-6 flex gap-1 overflow-x-auto border-b"
+      className="mb-6 flex gap-1 overflow-x-auto border-b scrollbar-none"
     >
       {WORKSPACE_STEPS.map(({ id, label }, index) => {
         const selected = id === current;

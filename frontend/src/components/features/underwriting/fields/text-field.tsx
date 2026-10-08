@@ -27,7 +27,9 @@ export function TextField({
   const { issuesByPath, showAllErrors } = useWorkspace();
 
   const issue = issuesByPath.get(name);
-  const showError = Boolean(issue) && (fieldState.isTouched || showAllErrors);
+  const showError =
+    Boolean(issue) &&
+    (showAllErrors || (fieldState.isTouched && issue?.kind === "invalid"));
 
   return (
     <Field data-invalid={showError || undefined} className="gap-1.5">

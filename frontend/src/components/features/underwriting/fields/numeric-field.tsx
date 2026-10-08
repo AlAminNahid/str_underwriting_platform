@@ -67,7 +67,9 @@ export function NumericField({
   const [editing, setEditing] = useState(false);
 
   const issue = issuesByPath.get(name);
-  const showError = Boolean(issue) && (fieldState.isTouched || showAllErrors);
+  const showError =
+    Boolean(issue) &&
+    (showAllErrors || (fieldState.isTouched && issue?.kind === "invalid"));
   const raw = String(value ?? "");
   const groupThousands = kind === "money" || kind === "monthly";
   const { prefix, suffix } = ADDONS[kind];
