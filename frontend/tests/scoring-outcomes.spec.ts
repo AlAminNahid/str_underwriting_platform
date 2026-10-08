@@ -1,70 +1,49 @@
 import { expect, test } from "@playwright/test";
 
-import { mockBackend, type PropertyKey } from "./fixtures/mock-api";
+import { SCORING_CASES } from "./fixtures/brief-cases";
+import { mockBackend } from "./fixtures/mock-api";
+import { fillUnderwriting, submitForGrading, usd } from "./fixtures/workspace";
 
-async function fillRequiredFieldsAndSubmit(
-  page: import("@playwright/test").Page,
-  underwritingId: number,
-) {
-  await page.goto(`/underwritings/${underwritingId}`);
+const HEADLINES = {
+  best: "Within the Best band",
+  medium: "Close, but outside the Best band",
+  low: "Outside the scoring range",
+} as const;
 
-  await page.getByTestId("field-purchase.downPaymentPct").fill("20");
-  await page.getByTestId("field-purchase.interestRatePct").fill("7");
-  await page.getByTestId("field-purchase.termYears").fill("30");
-  await page.getByTestId("field-purchase.closingCostsPct").fill("3");
-  await page.getByRole("button", { name: "Add expense" }).click();
-  await page.getByTestId("field-operatingExpenses.0.label").fill("Utilities");
-  await page.getByTestId("field-operatingExpenses.0.amount").fill("300");
+for (const { property, mid, rating, score, edge } of SCORING_CASES) {
+  test(`${property.street}: Mid ${usd(mid)} (${edge}) grades ${rating}`, async ({
+    page,
+  }) => {
+    const { calls } = await mockBackend(page, {
+      property,
+      initialStatus: "in_progress",
+    });
+    await page.goto(`/underwritings/${property.underwritingId}`);
 
-  await page.getByRole("button", { name: "Continue to Analysis" }).click();
-  await page.getByTestId("field-revenue.low").fill("120000");
-  await page.getByTestId("field-revenue.mid").fill("135000");
-  await page.getByTestId("field-revenue.high").fill("150000");
+    await fillUnderwriting(page, mid);
+    await submitForGrading(page);
+    await page.waitForURL(/\/submissions\/\d+/);
 
-  await page.getByRole("button", { name: "Continue to Deal tags" }).click();
-  await page
-    .getByRole("button", { name: "Continue to Review & submit" })
-    .click();
+    const sent = calls.submitPayloads[0] as {
+      forecasted_revenue: {
+        scenarios: { mid: { forecasted_revenue: string } };
+      };
+    };
+    expect(sent.forecasted_revenue.scenarios.mid.forecasted_revenue).toBe(
+      String(mid),
+    );
 
-  await page.getByTestId("submit-underwriting").click();
-  await page.getByTestId("confirm-submit").click();
-  await page.waitForURL(/\/submissions\/\d+/);
+    const badge = page.getByTestId("score-badge").first();
+    await expect(badge).toHaveAttribute("data-rating", rating);
+    await expect(badge).toContainText(String(score));
+    await expect(
+      page.getByRole("heading", { name: HEADLINES[rating] }),
+    ).toBeVisible();
+    await expect(
+      page.getByText(`Your Mid forecast of ${usd(mid)} was`),
+    ).toBeVisible();
+    await expect(
+      page.getByText(`analyst's ${usd(property.referenceMid)}`).first(),
+    ).toBeVisible();
+  });
 }
-
-test("a forecast within 25% but outside 10% grades Medium", async ({
-  page,
-}) => {
-  const { property } = await mockBackend(page, {
-    activeProperty: "A",
-    initialStatus: "in_progress",
-    submitRating: "medium",
-  });
-  await fillRequiredFieldsAndSubmit(page, property.underwritingId);
-
-  const badge = page.getByTestId("score-badge").first();
-  await expect(badge).toHaveAttribute("data-rating", "medium");
-  await expect(badge).toContainText("70");
-  await expect(
-    page.getByRole("heading", { name: "Close, but outside the Best band" }),
-  ).toBeVisible();
-});
-
-test("a forecast more than 25% off grades Low, on a different property than the rest of the suite", async ({
-  page,
-}) => {
-  const activeProperty: PropertyKey = "B";
-  const { property } = await mockBackend(page, {
-    activeProperty,
-    initialStatus: "in_progress",
-    submitRating: "low",
-  });
-  await fillRequiredFieldsAndSubmit(page, property.underwritingId);
-
-  await expect(page.getByText("12 Harbor Light Ln").first()).toBeVisible();
-  const badge = page.getByTestId("score-badge").first();
-  await expect(badge).toHaveAttribute("data-rating", "low");
-  await expect(badge).toContainText("40");
-  await expect(
-    page.getByRole("heading", { name: "Outside the scoring range" }),
-  ).toBeVisible();
-});

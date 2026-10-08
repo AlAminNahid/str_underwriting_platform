@@ -56,13 +56,18 @@ export function useSubmitUnderwriting() {
   const router = useRouter();
 
   return useMutation({
-    mutationFn: ({
+    mutationFn: async ({
       id,
       payload,
+      settle,
     }: {
       id: number;
       payload: SaveUnderwritingPayloadDto;
-    }) => submitUnderwriting(id, payload),
+      settle?: () => Promise<void>;
+    }) => {
+      await settle?.();
+      return submitUnderwriting(id, payload);
+    },
     onSuccess: (result, { id }) => {
       clearDraftBackup(id);
       queryClient.setQueryData(

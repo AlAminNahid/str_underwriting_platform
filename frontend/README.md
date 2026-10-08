@@ -20,7 +20,7 @@ npm install
 npm run dev                  # http://localhost:3000 (the API must be running)
 ```
 
-`npm run build` · `npm run lint` · `npm run test:e2e`
+`npm run build` · `npm run lint` · `npm test`
 
 ## Folder structure
 
@@ -67,25 +67,37 @@ src/
 ## Testing
 
 ```bash
-npm run test:e2e           # runs the whole suite headless, unattended
+npm test                   # unit + end-to-end, headless and unattended
+npm run test:unit          # unit tests only
+npm run test:e2e           # end-to-end tests only
 npm run test:e2e:report    # opens the last HTML report
 ```
 
-The suite (`tests/`) never talks to the real FastAPI backend. Every spec calls `mockBackend()` from `tests/fixtures/mock-api.ts` before navigating, which intercepts every `/api/*` call the app makes (`page.route`) and serves deterministic, in-memory fixture data for two fictional training cases (`PROPERTIES.A` / `PROPERTIES.B`). This is a deliberate choice, not just a convenience:
+Both suites run on the Playwright test runner, configured as two projects in `playwright.config.ts` (`unit` and `e2e`), so there is one tool and one report.
 
-- **Determinism.** Outcomes (Best/Medium/Low, validation state, draft contents) are fixed by the fixture, not by whatever happens to be in the seeded Docker database at run time.
-- **No pollution.** The real backend has no auth/multi-user separation, so tests that actually started or submitted real underwritings would create real drafts and skew real attempt counts. Mocking keeps the suite's writes entirely in-memory and local to each test.
-- **Runs unattended.** The suite never requires Docker/the backend to be up at all — only the Next.js dev server (started automatically by `playwright.config.ts`'s `webServer`).
-- **Multiple cases.** Each mocked dashboard always carries both fixture properties — the one the test is actively driving (`activeProperty: "A" | "B"`), plus the other left untouched (`not_started`). `scoring-outcomes.spec.ts`'s Low case and `resume-draft.spec.ts` exercise property B and A respectively, so the suite isn't just one property tested six different ways.
+### Fixture strategy
 
-Coverage (`tests/*.spec.ts`):
+The suite never talks to the real FastAPI backend. Every end-to-end spec calls `mockBackend()` from `tests/fixtures/mock-api.ts` before navigating. It intercepts every `/api/*` call (`page.route`) and serves in-memory data that follows the API's contract:
 
-| File                       | Covers                                                                                                                                                                                                         |
-| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `primary-path.spec.ts`     | The full primary user path: dashboard → property → start → fill every section → submit → Best result, including the leaderboard card                                                                           |
-| `scoring-outcomes.spec.ts` | Evaluation behavior for the Medium and Low bands (the PDF's "write Playwright cases for all three outcomes"), Low on a second property                                                                        |
-| `validation.spec.ts`       | Submission is blocked until the checklist is clear, "Go to field" lands on the right input, and out-of-range values are flagged immediately while merely-empty fields aren't flagged just from navigating away |
-| `resume-draft.spec.ts`     | Edge state: resuming an in-progress draft loads its saved values and never creates a second underwriting, alongside a second untouched case on the dashboard                                                   |
+- **Determinism.** Outcomes are fixed by fixtures, not by whatever is in the seeded Docker database at run time.
+- **No pollution.** The real backend has no per-user separation, so tests that started or submitted real underwritings would create real drafts and skew attempt counts. Every write stays in memory, local to one test.
+- **Runs unattended.** Only the Next.js dev server is needed, and `playwright.config.ts` starts it.
+- **Behaves like the API, not a canned reply.** Saves update the in-memory draft. Submit applies the payload, returns `422 Missing required sections` when a section is absent (as the API does), and grades the submitted Mid forecast with the API's rule (`|mid − reference| ÷ reference`, with ≤ 10% scoring Best and ≤ 25% Medium, both limits inclusive). Options such as `failSaves`, `failSubmits` and `saveDelayMs` inject server errors and slow saves for edge-state tests.
+- **Scoring cases come from the brief.** `tests/fixtures/brief-cases.ts` holds the brief's reference table: six properties with their reference Mid and their Best and Medium ranges. `SCORING_CASES` turns each row into three cases at the band edges (Best, Medium, and $1 outside Medium), alternating the lower and upper edges between properties. Adding a row adds three tests.
+- **Every call is recorded.** `mockBackend()` returns a call log (`startUnderwritingCalls`, `saveCalls`, `submitCalls`, `submitPayloads`, and an ordered `events` list), so tests can check what the app sent as well as what it shows.
+
+### Coverage
+
+| File                                                                          | Covers                                                                                                                                                                                                      |
+| ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `primary-path.spec.ts`                                                        | Full path: dashboard → property → start → every section → submit → Best result with leaderboard. Checks the submit payload, including percentages sent as fractions (`25` → `"0.25"`, `6.99` → `"0.0699"`)  |
+| `scoring-outcomes.spec.ts`                                                    | 18 data-driven cases from the brief's table: each property at a Best edge, a Medium edge and just outside Medium. Checks the forecast sent, the score, the band and the explanation text                       |
+| `validation.spec.ts`                                                          | Submit is blocked until the checklist is clear, Go to field lands on the right input, out-of-range values are flagged immediately, untouched fields aren't flagged just because the trainee navigated away, and the API's numbers are hidden while the checklist has open items |
+| `resume-draft.spec.ts`                                                        | Resuming an in-progress draft loads its saved values and never creates a second underwriting. Opening a draft without editing it sends no save                                                            |
+| `failure-states.spec.ts`                                                      | A failed autosave shows an error, pauses autosave and recovers with Retry. A failed submission keeps the trainee on the draft with an error, and a second attempt succeeds. Submitting during an in-flight save waits for it, and no save is sent after submit |
+| `unit/calculations.spec.ts`                                                   | Live-preview formulas against numbers produced by the backend calculator for the same inputs (to the cent), plus 0% interest, $0 out of pocket and missing inputs                                          |
+| `unit/schema.spec.ts`                                                         | The required-inputs counter, including an incomplete expense line counting as open                                                                                                                         |
+| `unit/form-mapper.spec.ts`                                                    | Percentage-to-fraction conversion, leaving out incomplete sections, and how half-filled line items are sent                                                                                                 |
 
 **Debugging a failure:** the config captures a screenshot and video on failure and a full trace on retry (`trace: "on-first-retry"`). `npm run test:e2e:report` opens the HTML report with those artifacts, and `npx playwright test --trace on` forces a trace on the very first run for local debugging.
 

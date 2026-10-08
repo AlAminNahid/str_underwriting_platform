@@ -9,7 +9,7 @@ Built for the STR Search Frontend Engineer Assessment with **Next.js 16, React 1
 | [`frontend/`](frontend) | The Next.js application (this submission). Code structure and conventions: [`frontend/README.md`](frontend/README.md) |
 | [`backend/`](backend)   | The provided FastAPI + Postgres API, unchanged. See [`backend/README.md`](backend/README.md)                          |
 
-**Contents:** [Quick start](#quick-start) · [Workflow](#workflow) · [Design rationale](#design-rationale) · [Technical decisions](#technical-decisions) · [Assumptions and limitations](#assumptions-and-limitations) · [Project status](#project-status) · [Scripts](#scripts)
+**Contents:** [Quick start](#quick-start) · [Workflow](#workflow) · [Design rationale](#design-rationale) · [Technical decisions](#technical-decisions) · [Testing](#testing) · [Assumptions and limitations](#assumptions-and-limitations) · [Scripts](#scripts)
 
 ---
 
@@ -63,8 +63,8 @@ The app follows the seven steps in the brief. Each screen has one clear job and 
 | 3–4. Underwrite and check outputs | **Workspace**: Financials (purchase and financing, optimization list, operating expenses, taxes), Analysis (Low / Mid / High revenue, assumptions, scenario table) and Deal tags, with a live Deal summary and autosave   | `/underwritings/[id]`             |
 | 5. Submit                         | **Review & submit**: checklist of missing and invalid fields with _Go to field_, key assumptions, the API's calculated numbers, and a confirmation dialog that flags extreme inputs                                       | `/underwritings/[id]?step=review` |
 | 6. See the score                  | **Evaluation result**: score and plain-language explanation, band chart, feedback tied to the property's market, and rank among your attempts                                                                             | `/submissions/[id]`               |
-| 6. Track progress                 | **Submissions**: every graded attempt, newest first, filterable by property. The evaluation result page also shows a leaderboard card ranking attempts by score, then by how close the forecast was        | `/submissions`                    |
-| 7. Automated tests                | Playwright end-to-end suite, run from the command line (see [Project status](#project-status))                                                                                                                          | —                                 |
+| 6. Track progress                 | **Submissions**: every graded attempt, newest first, filterable by property. The evaluation result page also shows a leaderboard card ranking attempts by score, then by how close the forecast was                       | `/submissions`                    |
+| 7. Automated tests                | Playwright unit and end-to-end suites, run unattended from the command line (see [Testing](#testing))                                                                                                                     | —                                 |
 
 ---
 
@@ -94,15 +94,15 @@ The app follows the seven steps in the brief. Each screen has one clear job and 
 
 **Percentages.** The API uses fractions (`0.20`); the form uses whole numbers (`20`). The conversion lives in one file, `src/lib/underwriting/form-mapper.ts`. Values are sent as decimal strings so `6.99%` arrives as exactly `0.0699`.
 
-**Live numbers in the browser.** The API only calculates once every required section is complete, so the workspace computes a live preview with pure functions written from the brief's Calculations tab (`src/lib/underwriting/calculations.ts`). They were checked against the backend calculator on the same inputs and match to the cent. The Review step also shows the API's own calculated numbers from the last save.
+**Live numbers in the browser.** The API only calculates once every required section is complete, so the workspace computes a live preview with pure functions written from the brief's Calculations tab (`src/lib/underwriting/calculations.ts`). Unit tests check them against the backend calculator's output for the same inputs, to the cent. The Review step also shows the API's own calculated numbers from the last save.
 
-**Autosave that works with partial input.** The API rejects half-filled purchase, tax and revenue sections, so autosave (about one second after typing stops) sends only complete, valid sections plus line items and tags. Partial input is kept in a per-draft browser backup that records which server version it builds on, so it is never restored over newer server data. Saves run one at a time, leaving with unsaved changes shows a browser warning, and autosave stops as soon as submit starts.
+**Autosave that works with partial input.** The API rejects half-filled purchase, tax and revenue sections, so autosave (about one second after typing stops) sends only complete, valid sections plus line items and tags. Partial input is kept in a per-draft browser backup that records which server version it builds on, so it is never restored over newer server data. Saves run one at a time, leaving with unsaved changes shows a browser warning, and opening a draft never saves anything until the trainee edits it. Submitting waits for any save already in flight and then stops autosave, so no save can reach the server after a draft is submitted.
 
 **One validation source.** A single zod schema (`src/lib/underwriting/schema.ts`) drives inline errors, step badges, the required-inputs counter, which sections can be saved, and the Review checklist, so they can never disagree.
 
 **State in the URL.** Dashboard filters (`?status=&market=&q=`), the Submissions property filter (`?property=`) and the workspace step (`?step=analysis`) live in the URL, so refresh, back and shared links keep the view.
 
-**Server state with React Query.** Loading, error and retry behaviour is consistent across pages, and Playwright can mock any API response with `page.route()`. After submitting, the response's submission and dashboard data go straight into the cache, so the result page and dashboard update without extra requests. Submissions and Leaderboard share one cached request.
+**Server state with React Query.** Loading, error and retry behaviour is consistent across pages, and Playwright can mock any API response with `page.route()`. After submitting, the response's submission and dashboard data go straight into the cache, so the result page and dashboard update without extra requests. The Submissions page and the result page's leaderboard card share one cached request.
 
 **One rule for dashboard stats.** Completed cases, Average score and the score pill on each card all use the latest attempt per property. Cards with several attempts also show the best score.
 
@@ -114,26 +114,21 @@ The app follows the seven steps in the brief. Each screen has one clear job and 
 
 ---
 
-## Assumptions and limitations
+## Testing
 
-- **Leaderboard.** The API has a single trainee and no leaderboard endpoint. Ranking is derived from `GET /api/submissions` (score first, then the closer forecast, then the earlier submission). A multi-user endpoint would only change the data source.
-- **Pre-submit warning thresholds** (PRR below 8% or above 50%) are general short-term rental rules of thumb, not values from the API. They only warn; they never block a submission.
-- **User profile** is static. The API has no users or authentication, so there is no sign-in or sign-out.
-- **Listing photos** come from the seed data (`img_src` on picsum.photos) and are random stock photos rather than the actual houses.
-- **"View listing"** links to the seed's Zillow URLs, which point to fictional properties.
-- **Light mode only**, by design.
-- **The backend is unchanged.** All behaviour is built on the provided API as-is.
+```bash
+cd frontend
+npm test                  # unit + end-to-end, headless and unattended
+```
 
----
+The suite runs on Playwright and needs no backend: every API call is intercepted with `page.route()` and answered from in-memory fixtures, so results are deterministic and the real database is never written to. Playwright starts the Next.js dev server itself.
 
-## Project status
+- **Scoring is data-driven from the brief.** The reference table in the brief (six properties, Best and Medium ranges) is the test data. Each property is tested at a band edge for all three outcomes, alternating the lower and upper edges, so both inclusive limits and both directions are covered (18 cases). The mock grades the forecast the trainee actually typed, using the same rule as the API, rather than returning a canned score.
+- **Primary path:** dashboard → property → start → every section → submit → result. The test also checks the submitted payload, including percentages sent as fractions (`6.99%` → `"0.0699"`).
+- **Validation and edge states:** submit stays blocked until the checklist is clear, Go to field lands on the right input, resuming a draft never creates a second one, a failed autosave offers Retry, a failed submission keeps the trainee on the draft, submitting waits for a save already in flight, and the API's numbers are hidden while the checklist has open items.
+- **Unit tests** check the live-preview formulas against numbers produced by the backend calculator for the same inputs, and check the form-to-API mapping.
 
-| Area                                                              | Status   |
-| ----------------------------------------------------------------- | -------- |
-| Dashboard, property page, workspace, review & submit, result page | Complete |
-| Submissions page                                                  | Complete |
-| Playwright end-to-end suite                                       | Complete. `npm run test:e2e` |
-| Video walkthrough                                                 | To do    |
+On failure, Playwright keeps a screenshot and video, and records a trace on retry. `npm run test:e2e:report` opens them in the HTML report. More detail is in [`frontend/README.md`](frontend/README.md#testing).
 
 ---
 
@@ -145,6 +140,8 @@ Run from `frontend/`:
 npm run dev               # development server on http://localhost:3000
 npm run build             # production build (includes type checking)
 npm run lint              # ESLint (Next.js and React hooks rules)
-npm run test:e2e          # Playwright end-to-end tests
+npm test                  # unit + end-to-end tests
+npm run test:unit         # unit tests only (calculations, form mapping)
+npm run test:e2e          # end-to-end tests only
 npm run test:e2e:report   # open the last Playwright HTML report
 ```

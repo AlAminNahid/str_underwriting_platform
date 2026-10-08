@@ -5,10 +5,11 @@ export const API_BASE = "http://localhost:8000";
 export type CaseStatus = "not_started" | "in_progress" | "submitted";
 export type PropertyKey = "A" | "B";
 
-interface PropertyFixture {
+export interface PropertyFixture {
   zpid: string;
   underwritingId: number;
   price: number;
+  referenceMid: number;
   address: string;
   street: string;
   city: string;
@@ -20,11 +21,12 @@ interface PropertyFixture {
   market: { id: number; name: string; slug: string; state: string };
 }
 
-const PROPERTIES: Record<PropertyKey, PropertyFixture> = {
+export const PROPERTIES: Record<PropertyKey, PropertyFixture> = {
   A: {
     zpid: "90000001",
     underwritingId: 900001,
     price: 540000,
+    referenceMid: 150000,
     address: "4 Bluewater Ct, Port Clyde, ME 04855",
     street: "4 Bluewater Ct",
     city: "Port Clyde",
@@ -44,6 +46,7 @@ const PROPERTIES: Record<PropertyKey, PropertyFixture> = {
     zpid: "90000002",
     underwritingId: 900002,
     price: 610000,
+    referenceMid: 120000,
     address: "12 Harbor Light Ln, Camden, ME 04843",
     street: "12 Harbor Light Ln",
     city: "Camden",
@@ -107,29 +110,30 @@ function propertyDto(p: PropertyFixture) {
   };
 }
 
-const SCORE_PROFILES = {
-  best: { accuracy: 100, deviation: 0.04 },
-  medium: { accuracy: 70, deviation: 0.16 },
-  low: { accuracy: 40, deviation: 0.34 },
-} as const;
+export type Rating = "best" | "medium" | "low";
 
-export type Rating = keyof typeof SCORE_PROFILES;
+const BEST_THRESHOLD = 0.1;
+const MEDIUM_THRESHOLD = 0.25;
+const SCORES: Record<Rating, number> = { best: 100, medium: 70, low: 40 };
 
-const REFERENCE_MID = 150000;
-
-function breakdownFor(rating: Rating) {
-  const { accuracy, deviation } = SCORE_PROFILES[rating];
-  const candidate = Math.round(REFERENCE_MID * (1 - deviation));
+export function gradeForecast(candidate: number | null, reference: number) {
+  const diff = candidate === null ? reference : Math.abs(candidate - reference);
+  const rating: Rating =
+    diff <= reference * BEST_THRESHOLD
+      ? "best"
+      : diff <= reference * MEDIUM_THRESHOLD
+        ? "medium"
+        : "low";
   return {
     rating,
-    accuracy,
+    accuracy: SCORES[rating],
     metric: "mid_gross_revenue",
     label: "Mid revenue forecast",
     candidate,
-    reference: REFERENCE_MID,
-    deviation,
-    best_threshold: 0.1,
-    medium_threshold: 0.25,
+    reference,
+    deviation: Number((diff / reference).toFixed(4)),
+    best_threshold: BEST_THRESHOLD,
+    medium_threshold: MEDIUM_THRESHOLD,
   };
 }
 
@@ -293,6 +297,7 @@ function applyPayload(draft: DraftFields, payload: Record<string, unknown>) {
 
   if (payload.purchase_details) {
     const p = payload.purchase_details as Record<string, unknown>;
+    draft.purchasePrice = num(p.purchase_price);
     draft.downPaymentPct = pct(p.down_payment_pct);
     draft.interestRate = pct(p.interest_rate);
     draft.mortgageYears = num(p.mortgage_years);
@@ -349,33 +354,60 @@ function applyPayload(draft: DraftFields, payload: Record<string, unknown>) {
 
 export interface MockBackendOptions {
   activeProperty?: PropertyKey;
+  property?: PropertyFixture;
   initialStatus?: CaseStatus;
   seedDraft?: Partial<DraftFields>;
   attempts?: number;
-  submitRating?: Rating;
+  failSaves?: number;
+  failSubmits?: number;
+  saveDelayMs?: number;
 }
 
 export function createCallLog() {
-  return { startUnderwritingCalls: 0, submitCalls: 0 };
+  return {
+    startUnderwritingCalls: 0,
+    saveCalls: 0,
+    submitCalls: 0,
+    submitPayloads: [] as Record<string, unknown>[],
+    events: [] as string[],
+  };
+}
+
+const SERVER_ERROR = {
+  status: 500,
+  json: { detail: "Failed to save underwriting" },
+};
+
+function missingSections(draft: DraftFields) {
+  return [
+    ["purchase_details", draft.downPaymentPct !== null],
+    ["forecasted_revenue", draft.revenueMid !== null],
+    ["taxes", draft.taxes !== null],
+  ]
+    .filter(([, present]) => !present)
+    .map(([name]) => name);
 }
 
 export async function mockBackend(
   page: Page,
   {
     activeProperty = "A",
+    property,
     initialStatus = "not_started",
     seedDraft,
     attempts = 0,
-    submitRating = "best",
+    failSaves = 0,
+    failSubmits = 0,
+    saveDelayMs = 0,
   }: MockBackendOptions = {},
 ) {
-  const active = PROPERTIES[activeProperty];
-  const idle = PROPERTIES[activeProperty === "A" ? "B" : "A"];
+  const active = property ?? PROPERTIES[activeProperty];
+  const idle = active.zpid === PROPERTIES.A.zpid ? PROPERTIES.B : PROPERTIES.A;
   const draft: DraftFields = { ...emptyDraft(active.price), ...seedDraft };
   const calls = createCallLog();
   let status: CaseStatus = initialStatus;
   let submissionId: number | null = null;
-  let submission: ReturnType<typeof breakdownFor> | null = null;
+  let submission: ReturnType<typeof gradeForecast> | null = null;
   let submittedAt = "";
 
   function caseRow(p: PropertyFixture, caseStatus: CaseStatus) {
@@ -478,7 +510,7 @@ export async function mockBackend(
 
   await page.route(
     `${API_BASE}/api/underwritings/${active.underwritingId}`,
-    (route) => {
+    async (route) => {
       const method = route.request().method();
       if (method === "GET") {
         return route.fulfill({
@@ -486,8 +518,16 @@ export async function mockBackend(
         });
       }
       if (method === "PUT") {
+        calls.saveCalls += 1;
+        calls.events.push("save:start");
+        if (saveDelayMs) await new Promise((r) => setTimeout(r, saveDelayMs));
+        if (calls.saveCalls <= failSaves) {
+          calls.events.push("save:end");
+          return route.fulfill(SERVER_ERROR);
+        }
         const payload = route.request().postDataJSON();
         applyPayload(draft, payload);
+        calls.events.push("save:end");
         return route.fulfill({ json: underwritingDto(active, draft, false) });
       }
       return route.fallback();
@@ -498,10 +538,27 @@ export async function mockBackend(
     `${API_BASE}/api/underwritings/${active.underwritingId}/submit`,
     (route) => {
       calls.submitCalls += 1;
+      calls.events.push("submit");
+      if (calls.submitCalls <= failSubmits) {
+        return route.fulfill({
+          status: 500,
+          json: { detail: "Failed to submit underwriting" },
+        });
+      }
+      const payload = route.request().postDataJSON() ?? {};
+      calls.submitPayloads.push(payload);
+      applyPayload(draft, payload);
+      const missing = missingSections(draft);
+      if (missing.length > 0) {
+        return route.fulfill({
+          status: 422,
+          json: { detail: `Missing required sections: ${missing.join(", ")}` },
+        });
+      }
       status = "submitted";
       submissionId = 500001;
       submittedAt = new Date().toISOString();
-      submission = breakdownFor(submitRating);
+      submission = gradeForecast(draft.revenueMid, active.referenceMid);
       route.fulfill({
         json: {
           submission: submissionRecord(),

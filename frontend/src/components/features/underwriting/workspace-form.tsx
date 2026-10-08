@@ -39,7 +39,7 @@ export function WorkspaceForm({ draft }: { draft: UnderwritingDraft }) {
   const [initialValues] = useState(() =>
     pickInitialValues(draft.id, draft.values, draft.updatedAt),
   );
-  const [serverPayload] = useState(() => toSavePayload(draft.savedValues));
+  const [serverPayload] = useState(() => toSavePayload(draft.values));
 
   const form = useForm<UnderwritingFormValues>({
     defaultValues: initialValues,
@@ -100,7 +100,11 @@ export function WorkspaceForm({ draft }: { draft: UnderwritingDraft }) {
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   function confirmSubmit() {
-    submit.mutate({ id: draft.id, payload: toSavePayload(form.getValues()) });
+    submit.mutate({
+      id: draft.id,
+      payload: toSavePayload(form.getValues()),
+      settle: autosave.settle,
+    });
   }
   const submitError = submit.error
     ? submit.error instanceof ApiError && submit.error.status === 422

@@ -23,7 +23,12 @@ export default defineConfig({
 
   projects: [
     {
-      name: "chromium",
+      name: "unit",
+      testDir: "./tests/unit",
+    },
+    {
+      name: "e2e",
+      testIgnore: "unit/**",
       use: { ...devices["Desktop Chrome"] },
     },
   ],

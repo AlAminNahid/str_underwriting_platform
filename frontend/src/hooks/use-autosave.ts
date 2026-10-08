@@ -35,23 +35,21 @@ export function useAutosave({
   const [error, setError] = useState<string | null>(null);
   const [savedAt, setSavedAt] = useState<Date | null>(null);
 
-  const inFlight = useRef(false);
+  const inFlight = useRef<Promise<void> | null>(null);
   const queued = useRef<string | null>(null);
   const latestJson = useRef(json);
+  const enabledRef = useRef(enabled);
   useEffect(() => {
     latestJson.current = json;
+    enabledRef.current = enabled;
+    if (!enabled) queued.current = null;
   });
 
-  const send = useCallback(
+  const drain = useCallback(
     async (body: string) => {
-      if (inFlight.current) {
-        queued.current = body;
-        return;
-      }
-      inFlight.current = true;
       setSaving(true);
       let current: string | null = body;
-      while (current) {
+      while (current && enabledRef.current) {
         try {
           const saved = await saveUnderwriting(id, JSON.parse(current));
           queryClient.setQueryData(queryKeys.underwriting(id), saved);
@@ -72,11 +70,27 @@ export function useAutosave({
         queued.current = null;
         current = next !== null && next !== current ? next : null;
       }
-      inFlight.current = false;
       setSaving(false);
     },
     [id, queryClient],
   );
+
+  const send = useCallback(
+    (body: string) => {
+      if (inFlight.current) {
+        queued.current = body;
+        return inFlight.current;
+      }
+      const run = drain(body).finally(() => {
+        inFlight.current = null;
+      });
+      inFlight.current = run;
+      return run;
+    },
+    [drain],
+  );
+
+  const settle = useCallback(() => inFlight.current ?? Promise.resolve(), []);
 
   const dirty = json !== savedJson;
 
@@ -106,5 +120,5 @@ export function useAutosave({
         ? "pending"
         : "saved";
 
-  return { status, error, savedAt, savedVersion, retry };
+  return { status, error, savedAt, savedVersion, retry, settle };
 }

@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { mockBackend, TEST_UNDERWRITING_ID } from "./fixtures/mock-api";
+import { fillUnderwriting } from "./fixtures/workspace";
 
 test.describe("validation", () => {
   test("submitting is blocked until every required field is complete, and Review lists exactly what's missing", async ({
@@ -49,5 +50,29 @@ test.describe("validation", () => {
     await page.getByRole("button", { name: "Continue to Analysis" }).click();
     await page.getByRole("button", { name: "Back" }).click();
     await expect(downPayment).not.toHaveAttribute("aria-invalid", "true");
+  });
+
+  test("the API's numbers are hidden while the checklist has open items, so stale values are never shown", async ({
+    page,
+  }) => {
+    await mockBackend(page, { initialStatus: "in_progress" });
+    await page.goto(`/underwritings/${TEST_UNDERWRITING_ID}`);
+    await fillUnderwriting(page, 150000);
+
+    const official = page.getByTestId("official-numbers");
+    await expect(page.getByTestId("action-bar")).toContainText(
+      "All changes saved",
+    );
+    await expect(official).toContainText("Total out of pocket");
+
+    await page.getByTestId("step-analysis").click();
+    await page.getByTestId("field-revenue.low").fill("200000");
+    await page.getByTestId("step-review").click();
+
+    await expect(page.getByTestId("review-issue")).toHaveCount(1);
+    await expect(official).not.toContainText("Total out of pocket");
+    await expect(official).toContainText(
+      "Appears once every item in the checklist is resolved",
+    );
   });
 });

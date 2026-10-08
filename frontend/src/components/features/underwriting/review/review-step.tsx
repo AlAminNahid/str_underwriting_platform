@@ -225,7 +225,8 @@ function OfficialNumbers({
   official: UnderwritingDraft["official"];
   saveStatus: SaveStatus;
 }) {
-  const ready = official.totalOutOfPocket !== null;
+  const { issues } = useWorkspace();
+  const ready = official.totalOutOfPocket !== null && issues.length === 0;
   const rows: [string, string][] = [
     ["Total out of pocket", formatCurrency(official.totalOutOfPocket)],
     ["Mid revenue (graded)", formatCurrency(official.midRevenue)],
@@ -248,7 +249,9 @@ function OfficialNumbers({
             ? saveStatus === "saved"
               ? "From your last save. These are the numbers used when you submit."
               : "Saving your latest changes…"
-            : "Appears once every required section is complete and saved."}
+            : issues.length > 0
+              ? "Appears once every item in the checklist is resolved and saved."
+              : "Appears once your latest changes are saved."}
         </CardDescription>
       </CardHeader>
       {ready && (

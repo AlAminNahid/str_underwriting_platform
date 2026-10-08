@@ -18,13 +18,13 @@ test("resuming an in-progress case loads the saved draft instead of starting a n
 
   await page.goto("/");
 
-  // The dashboard carries a second, untouched case alongside the one this
-  // test resumes - the suite's fixture data spans more than one property.
   await expect(page.getByTestId("case-card")).toHaveCount(2);
   const otherCard = page
     .getByTestId("case-card")
     .filter({ hasText: "12 Harbor Light Ln" });
-  await expect(otherCard.getByRole("link", { name: "Start case" })).toBeVisible();
+  await expect(
+    otherCard.getByRole("link", { name: "Start case" }),
+  ).toBeVisible();
 
   const card = page
     .getByTestId("case-card")
@@ -51,4 +51,16 @@ test("resuming an in-progress case loads the saved draft instead of starting a n
   );
 
   expect(calls.startUnderwritingCalls).toBe(0);
+});
+
+test("opening a draft without editing it sends no save", async ({ page }) => {
+  const { calls } = await mockBackend(page, { initialStatus: "in_progress" });
+  await page.goto(`/underwritings/${TEST_UNDERWRITING_ID}`);
+
+  await expect(page.getByTestId("field-taxes.landPct")).toHaveValue("20");
+  await expect(page.getByTestId("action-bar")).toContainText(
+    "All changes saved",
+  );
+  await page.waitForTimeout(1500);
+  expect(calls.saveCalls).toBe(0);
 });

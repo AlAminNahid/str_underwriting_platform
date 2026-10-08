@@ -234,9 +234,10 @@ export const REQUIRED_PATHS = [
 ] as const;
 
 export function countCompleted(issues: FormIssue[]) {
-  const open = new Set(issues.map((i) => i.path));
+  const isOpen = (path: string) =>
+    issues.some((i) => i.path === path || i.path.startsWith(`${path}.`));
   return {
-    done: REQUIRED_PATHS.filter((p) => !open.has(p)).length,
+    done: REQUIRED_PATHS.filter((p) => !isOpen(p)).length,
     total: REQUIRED_PATHS.length,
   };
 }
