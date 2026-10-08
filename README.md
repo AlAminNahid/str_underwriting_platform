@@ -63,7 +63,7 @@ The app follows the seven steps in the brief. Each screen has one clear job and 
 | 3–4. Underwrite and check outputs | **Workspace**: Financials (purchase and financing, optimization list, operating expenses, taxes), Analysis (Low / Mid / High revenue, assumptions, scenario table) and Deal tags, with a live Deal summary and autosave   | `/underwritings/[id]`             |
 | 5. Submit                         | **Review & submit**: checklist of missing and invalid fields with _Go to field_, key assumptions, the API's calculated numbers, and a confirmation dialog that flags extreme inputs                                       | `/underwritings/[id]?step=review` |
 | 6. See the score                  | **Evaluation result**: score and plain-language explanation, band chart, feedback tied to the property's market, and rank among your attempts                                                                             | `/submissions/[id]`               |
-| 6. Track progress                 | **Submissions**: every graded attempt, newest first, filterable by property. **Leaderboard**: attempts ranked by score, then by how close the forecast was                                               | `/submissions`, `/leaderboard`    |
+| 6. Track progress                 | **Submissions**: every graded attempt, newest first, filterable by property. The evaluation result page also shows a leaderboard card ranking attempts by score, then by how close the forecast was        | `/submissions`                    |
 | 7. Automated tests                | Playwright end-to-end suite, run from the command line (see [Project status](#project-status))                                                                                                                          | —                                 |
 
 ---
@@ -131,8 +131,8 @@ The app follows the seven steps in the brief. Each screen has one clear job and 
 | Area                                                              | Status   |
 | ----------------------------------------------------------------- | -------- |
 | Dashboard, property page, workspace, review & submit, result page | Complete |
-| Submissions and Leaderboard pages                                 | Complete |
-| Playwright end-to-end suite                                       | In progress. `npm run test:e2e` is wired up |
+| Submissions page                                                  | Complete |
+| Playwright end-to-end suite                                       | Complete. `npm run test:e2e` |
 | Video walkthrough                                                 | To do    |
 
 ---
